@@ -1030,6 +1030,12 @@
         if (document.getElementById('fpCartCounter')) document.getElementById('fpCartCounter').innerText = count;
         localStorage.setItem('cenin_cart_count', count);
     };
+    window.updateCartBadge = function() {
+        window.syncCartCounter();
+    };
+    window.renderCartDrawer = function() {
+        if (window.renderCartUI) window.renderCartUI();
+    };
     window.syncCartCounter();
 
     // Drawer Logic
