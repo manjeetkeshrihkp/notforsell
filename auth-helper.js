@@ -2,10 +2,19 @@ import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebase
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// Helper to dynamically set authDomain to prevent third-party cookie blocking in production
+const getAuthDomain = () => {
+  const host = window.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1" || host.startsWith("192.168.") || host.startsWith("10.") || host.startsWith("172.")) {
+    return "ceninasia.firebaseapp.com";
+  }
+  return host;
+};
+
 // Unified Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
-  authDomain: "ceninasia.firebaseapp.com",
+  authDomain: getAuthDomain(),
   projectId: "ceninasia",
   storageBucket: "ceninasia.firebasestorage.app",
   messagingSenderId: "234745308370",
@@ -604,7 +613,15 @@ export const CeninAuth = {
         console.error("Redirect session retrieval failed:", error);
         localStorage.removeItem('cenin_auth_redirect_origin');
         localStorage.removeItem('cenin_checkout_redirect');
-        alert("Verification failed: " + error.message);
+        
+        let friendlyMessage = error.message;
+        if (error.code === 'auth/unauthorized-domain') {
+          friendlyMessage = `This domain (${window.location.hostname}) is not authorized in your Firebase Console.\n\nPlease go to Firebase Console > Authentication > Settings > Authorized domains and add "${window.location.hostname}".`;
+        } else if (error.code === 'auth/web-storage-unsupported') {
+          friendlyMessage = "Web storage is unsupported or blocked by your browser's privacy settings (e.g. third-party cookies are disabled). Please enable cookies or try a different browser.";
+        }
+        
+        alert("Verification failed: " + friendlyMessage);
       } finally {
         const loaderEl = document.getElementById('cenin-auth-redirect-loader');
         if (loaderEl) loaderEl.remove();
