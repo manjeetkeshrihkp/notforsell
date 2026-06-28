@@ -1,3 +1,385 @@
-<h1>Hacker meet developer 
-    
-</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Studio | Cenin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --accent: #EAB308;
+            --nav-height: 60px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-primary);
+            overflow: hidden; /* Prevent body scroll */
+            color: var(--text-main);
+        }
+        
+        /* Global Loader */
+        #cenin-global-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #121212; z-index: 99999; display: flex;
+            justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .loader-logo { font-size: 2rem; font-weight: 800; letter-spacing: 4px; margin-bottom: 20px; color: #fff; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Feed Container */
+        .feed-container {
+            width: 100%;
+            height: calc(100vh - var(--nav-height));
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: relative;
+        }
+        .feed-container::-webkit-scrollbar { display: none; }
+
+        /* Slide */
+        .slide {
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            position: relative;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-media {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .slide-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            pointer-events: none;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Bottom Left Info */
+        .slide-info {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            width: calc(100% - 80px);
+            z-index: 10;
+        }
+        .slide-brand {
+            font-size: 0.8rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        .slide-title {
+            font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; line-height: 1.2;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .slide-price {
+            font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 10px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .slide-desc {
+            font-size: 0.85rem; font-weight: 400; opacity: 0.9;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8); line-height: 1.4;
+        }
+
+        /* Right Actions */
+        .slide-actions {
+            position: absolute;
+            bottom: 30px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            z-index: 10;
+        }
+        .action-btn {
+            background: none; border: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+        .action-btn:active { transform: scale(0.85); }
+        .action-btn svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 1.5; transition: all 0.3s ease; }
+        .action-btn span { font-size: 0.75rem; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        
+        /* Liked State */
+        .action-btn.liked svg { fill: #ef4444; stroke: #ef4444; animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        /* Cart State */
+        .action-btn.in-cart svg { fill: var(--accent); stroke: var(--accent); }
+
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background-color: #09090b; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; padding: 0; z-index: 9000; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.65rem; font-weight: 600; gap: 0.2rem; transition: all 0.3s; width: 20%; cursor: pointer;}
+        .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.3s; }
+        .nav-item:hover, .nav-item.active { color: var(--text-main); }
+        .nav-item.home-item:active svg, .nav-item.home-item.active svg { fill: var(--accent); stroke: var(--text-main); }
+        
+        /* Empty State */
+        .empty-state { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 1.1rem; color: var(--text-muted); gap: 15px; }
+        
+        /* Cart Badge */
+        .cart-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800; border-radius: 50%; min-width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid #09090b; }
+        .nav-icon-container { position: relative; }
+    </style>
+</head>
+<body>
+    <div id="cenin-global-loader">
+        <div class="loader-logo">CENIN</div>
+        <div class="spinner"></div>
+    </div>
+
+    <div class="top-bar">STUDIO</div>
+
+    <div class="feed-container" id="feedContainer">
+        <!-- Slides will be injected here -->
+    </div>
+
+    <nav class="bottom-nav" id="bottomNavBar">
+        <a href="index.html" class="nav-item home-item">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Home</span>
+        </a>
+        <a href="shop.html" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span>Shop</span>
+        </a>
+        <a href="wishlist.html" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span>Wishlist</span>
+        </a>
+        <a href="studio.html" class="nav-item active">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            <span>Studio</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <div class="nav-icon-container">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <div id="cartBadgeNav" class="cart-badge" style="display: none;">0</div>
+            </div>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
+            authDomain: "ceninasia.firebaseapp.com",
+            projectId: "ceninasia",
+            storageBucket: "ceninasia.firebasestorage.app",
+            messagingSenderId: "234745308370",
+            appId: "1:234745308370:web:77a89729fa6d829d37390b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global State
+        try {
+            window.cartItems = JSON.parse(localStorage.getItem('cenin_cart_items_map')) || {};
+        } catch(e) { window.cartItems = {}; }
+
+        try {
+            window.wishlist = JSON.parse(localStorage.getItem('cenin_wishlist')) || [];
+        } catch(e) { window.wishlist = []; }
+        
+        // Sync Cart Badge
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadgeNav');
+            let total = 0;
+            for (let id in window.cartItems) total += window.cartItems[id].qty;
+            if (total > 0) {
+                badge.innerText = total;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        updateCartBadge();
+
+        // Render Feed
+        async function loadFeed() {
+            const feedContainer = document.getElementById('feedContainer');
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                let products = [];
+                querySnapshot.forEach((doc) => {
+                    const item = doc.data();
+                    item.id = doc.id;
+                    products.push(item);
+                });
+
+                // Randomize feed (TikTok style)
+                products = products.sort(() => Math.random() - 0.5);
+
+                if (products.length === 0) {
+                    feedContainer.innerHTML = `<div class="empty-state">No products found in Studio.</div>`;
+                } else {
+                    let html = '';
+                    products.forEach(p => {
+                        const priceFmt = p.salePrice ? p.salePrice : p.price;
+                        const mainImage = (p.images && p.images.length > 0) ? p.images[0] : '';
+                        const hasVideo = (p.videos && p.videos.length > 0) ? p.videos[0] : null;
+                        
+                        const isLiked = window.wishlist.includes(p.id) ? 'liked' : '';
+                        const isInCart = window.cartItems[p.id] ? 'in-cart' : '';
+
+                        // Media Element
+                        let mediaHtml = '';
+                        if (hasVideo) {
+                            mediaHtml = `<video class="slide-media slide-video" src="${hasVideo}" autoplay loop muted playsinline></video>`;
+                        } else {
+                            mediaHtml = `<img class="slide-media" src="${mainImage}" alt="${p.name}" loading="lazy">`;
+                        }
+
+                        html += `
+                            <div class="slide" data-id="${p.id}">
+                                ${mediaHtml}
+                                <div class="slide-overlay"></div>
+                                
+                                <div class="slide-info">
+                                    <div class="slide-brand">Cenin Exclusive</div>
+                                    <h2 class="slide-title">${p.name}</h2>
+                                    <div class="slide-price">₹${Number(priceFmt).toLocaleString('en-IN')}</div>
+                                    <p class="slide-desc">${p.desc || p.description || 'Experience luxury with Cenin.'}</p>
+                                </div>
+                                
+                                <div class="slide-actions">
+                                    <button class="action-btn wishlist-btn ${isLiked}" onclick="toggleWishlist('${p.id}', this)">
+                                        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                        <span>Like</span>
+                                    </button>
+                                    <button class="action-btn cart-btn ${isInCart}" onclick="toggleCart('${p.id}', '${p.name}', ${priceFmt}, '${mainImage}', this)">
+                                        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                                        <span>Buy</span>
+                                    </button>
+                                    <button class="action-btn share-btn" onclick="shareProduct('${p.id}')">
+                                        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    feedContainer.innerHTML = html;
+
+                    // Play/Pause logic based on intersection observer
+                    setupVideoObserver();
+                }
+            } catch(e) {
+                console.error("Error loading feed", e);
+                feedContainer.innerHTML = `<div class="empty-state">Failed to load feed. Check connection.</div>`;
+            }
+            
+            setTimeout(() => {
+                const loader = document.getElementById('cenin-global-loader');
+                if(loader) {
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'hidden';
+                }
+            }, 500);
+        }
+
+        // Functions exposed to window for inline onclick handlers
+        window.toggleWishlist = function(id, btnElement) {
+            if (window.wishlist.includes(id)) {
+                window.wishlist = window.wishlist.filter(item => item !== id);
+                btnElement.classList.remove('liked');
+            } else {
+                window.wishlist.push(id);
+                btnElement.classList.add('liked');
+            }
+            localStorage.setItem('cenin_wishlist', JSON.stringify(window.wishlist));
+        };
+
+        window.toggleCart = function(id, name, price, img, btnElement) {
+            if (window.cartItems[id]) {
+                // Remove
+                delete window.cartItems[id];
+                btnElement.classList.remove('in-cart');
+            } else {
+                // Add
+                window.cartItems[id] = { id, name, price, qty: 1, image: img };
+                btnElement.classList.add('in-cart');
+            }
+            localStorage.setItem('cenin_cart_items_map', JSON.stringify(window.cartItems));
+            updateCartBadge();
+        };
+
+        window.shareProduct = function(id) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Cenin Studio',
+                    text: 'Check out this exclusive piece from Cenin!',
+                    url: window.location.origin + '/shop.html?p=' + id
+                }).catch(e => console.log(e));
+            } else {
+                alert("Link copied to clipboard!");
+            }
+        };
+
+        // Autoplay videos when they snap into view
+        function setupVideoObserver() {
+            const videos = document.querySelectorAll('.slide-video');
+            if (videos.length === 0) return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.display = 'block';
+                        entry.target.play().catch(e => console.log("Autoplay prevented", e));
+                    } else {
+                        entry.target.pause();
+                    }
+                });
+            }, { threshold: 0.6 });
+
+            videos.forEach(v => observer.observe(v));
+        }
+
+        // Init
+        loadFeed();
+    </script>
+</body>
+</html>
