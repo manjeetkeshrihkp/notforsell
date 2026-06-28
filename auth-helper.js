@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Helper to dynamically set authDomain to prevent third-party cookie blocking in production
@@ -379,8 +379,94 @@ export const CeninAuth = {
     // Check if we have returning redirect auth flow results
     this.handleRedirectResultCheck();
 
+    // Check if we are returning from the mobile auth bridge redirect
+    this.handleBridgeCallbackCheck();
+
     // Dynamically bind to existing page components
     this.rebindDOM();
+  },
+
+  // Check if we are returning from the same-domain auth bridge
+  async handleBridgeCallbackCheck() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleIdToken = urlParams.get('google_id_token');
+    const googleAccessToken = urlParams.get('google_access_token');
+    const googleAuthError = urlParams.get('google_auth_error');
+
+    if (googleIdToken) {
+      // Clear the query params from the URL so it looks clean
+      const cleanUrl = window.location.origin + window.location.pathname + window.location.search
+        .replace(/[\?&]google_id_token=[^&]+/, '')
+        .replace(/[\?&]google_access_token=[^&]+/, '')
+        .replace(/^[\?&]/, '?')
+        .replace(/\?$/, '');
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      // Sign in with the credential
+      this.handleBridgeSignIn(googleIdToken, googleAccessToken);
+    } else if (googleAuthError) {
+      const cleanUrl = window.location.origin + window.location.pathname + window.location.search
+        .replace(/[\?&]google_auth_error=[^&]+/, '')
+        .replace(/^[\?&]/, '?')
+        .replace(/\?$/, '');
+      window.history.replaceState({}, document.title, cleanUrl);
+      
+      console.error("Bridge authentication failed:", googleAuthError);
+      alert("Sign-In Failed: " + googleAuthError);
+    }
+  },
+
+  // Perform sign in using credentials passed from the bridge
+  async handleBridgeSignIn(idToken, accessToken) {
+    // Injects a beautiful full-screen loading blocker
+    const loader = document.createElement('div');
+    loader.id = 'cenin-auth-redirect-loader';
+    loader.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #09090B; z-index: 9999999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: white;
+    `;
+    loader.innerHTML = `
+      <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #EAB308; border-radius: 50%; animation: spin 1s cubic-bezier(0.16, 1, 0.3, 1) infinite; margin-bottom: 1.5rem;"></div>
+      <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">Authenticating Session</div>
+      <div style="color: #A1A1AA; font-size: 0.85rem;">Completing secure Google verification...</div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    `;
+    document.body.appendChild(loader);
+
+    try {
+      const authInstance = getAuthInstance();
+      const credential = GoogleAuthProvider.credential(idToken, accessToken);
+      const result = await signInWithCredential(authInstance, credential);
+      
+      if (result?.user) {
+        window.currentUser = result.user;
+      }
+
+      // Trigger checkout page specific flow if needed
+      if (localStorage.getItem('cenin_checkout_redirect') === 'true') {
+        localStorage.removeItem('cenin_checkout_redirect');
+        
+        // Let the page know we are ready
+        setTimeout(() => {
+          if (typeof window.proceedToCheckoutForm === 'function') {
+            window.proceedToCheckoutForm();
+          }
+          if (window.location.pathname.includes('shop.html')) {
+            const sidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            if (sidebar) sidebar.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            if (window.renderCartUI) window.renderCartUI();
+          }
+        }, 600);
+      }
+    } catch (error) {
+      console.error("Bridge Sign-In failed:", error);
+      alert("Verification failed: " + error.message);
+    } finally {
+      if (loader) loader.remove();
+    }
   },
 
   rebindDOM() {
@@ -491,7 +577,10 @@ export const CeninAuth = {
       if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
         localStorage.setItem('cenin_checkout_redirect', 'true');
       }
-      await this.signInRedirectFlow();
+      
+      // Redirect to the same-domain auth bridge on Firebase Hosting
+      const bridgeUrl = `https://ceninasia.firebaseapp.com/auth-bridge.html?redirect=${encodeURIComponent(window.location.href)}`;
+      window.location.href = bridgeUrl;
       return;
     }
 
@@ -597,7 +686,17 @@ export const CeninAuth = {
 
       try {
         const authInstance = getAuthInstance();
-        const result = await getRedirectResult(authInstance);
+        
+        // Timeout after 5 seconds to prevent hanging the UI on mobile browsers
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Timeout: Google didn't respond in time. This can happen if cross-site tracking is prevented or third-party cookies are blocked.")), 5000)
+        );
+        
+        const result = await Promise.race([
+          getRedirectResult(authInstance),
+          timeoutPromise
+        ]);
+
         if (result?.user) {
           window.currentUser = result.user;
         }
@@ -610,7 +709,7 @@ export const CeninAuth = {
           window.location.replace(cleanOrigin);
         }
       } catch (error) {
-        console.error("Redirect session retrieval failed:", error);
+        console.error("Redirect session retrieval failed or timed out:", error);
         localStorage.removeItem('cenin_auth_redirect_origin');
         localStorage.removeItem('cenin_checkout_redirect');
         
