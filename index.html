@@ -2121,6 +2121,30 @@
         window.goToPaymentForm();
     };
     
+    window.fetchUserWalletOnBoot = async function() {
+        let email = "";
+        if (window.currentUser && window.currentUser.email) {
+            email = window.currentUser.email.toLowerCase().trim();
+        } else {
+            const savedStr = localStorage.getItem('cenin_saved_address');
+            if (savedStr) {
+                try {
+                    email = JSON.parse(savedStr).email.toLowerCase().trim();
+                } catch(e) {}
+            }
+        }
+        if (email) {
+            try {
+                const userRef = window.doc(window.db, "users", email);
+                const userSnap = await window.getDoc(userRef);
+                if (userSnap.exists()) {
+                    window.currentWalletBalance = Number(userSnap.data().walletBalance) || 0;
+                    window.renderCartUI();
+                }
+            } catch(e) { console.error("Wallet fetch error on boot", e); }
+        }
+    };
+
     window.updateCouponUsage = async function(coupon, orderId = "") {
         if (coupon && coupon.id) {
             try {
