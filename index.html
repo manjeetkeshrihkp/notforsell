@@ -1626,6 +1626,7 @@
         localStorage.removeItem('cenin_pending_upi_total');
         localStorage.removeItem('cenin_pending_upi_expires');
         window.cartItems = {};
+        if (window.syncCartToFirebase) window.syncCartToFirebase();
         localStorage.setItem('cenin_cart_items_map', JSON.stringify(window.cartItems));
         window.appliedCoupon = null;
         localStorage.removeItem('cenin_applied_coupon');
