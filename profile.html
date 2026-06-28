@@ -181,89 +181,7 @@
     .icon-li { background: #0077b5; }
     .social-icon-box svg { width: 24px; height: 24px; fill: currentColor; }
 
-    /* =========================================
-       MANDATORY GOOGLE SIGN IN OVERLAY
-    ========================================= */
-    .mandatory-auth-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg-primary);
-      z-index: 15000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: var(--transition-smooth);
-      flex-direction: column;
-      padding: 2rem;
-    }
-    .mandatory-auth-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    .mandatory-auth-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      padding: 3rem 2.5rem;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      box-shadow: var(--shadow-hover);
-    }
-    .mandatory-auth-logo {
-      font-size: 1.8rem;
-      font-weight: 900;
-      letter-spacing: 2px;
-      margin-bottom: 1.5rem;
-      text-transform: uppercase;
-      color: var(--text-main);
-    }
-    .mandatory-auth-logo span {
-      color: var(--accent);
-    }
-    .mandatory-auth-card h2 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 0.8rem;
-    }
-    .mandatory-auth-card p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin-bottom: 2.5rem;
-      line-height: 1.5;
-    }
-    .mandatory-google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      padding: 1.1rem;
-      background: var(--bg-primary);
-      border: 1.5px solid var(--text-main);
-      border-radius: 30px;
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: var(--transition-smooth);
-      color: var(--text-main);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .mandatory-google-btn:hover {
-      background: var(--text-main);
-      color: var(--bg-primary);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-hover);
-    }
-    .google-logo-svg {
-      width: 20px;
-      height: 20px;
-    }
-    
+
     /* Loading Spinner */
     .mandatory-loading {
       position: fixed;
@@ -431,17 +349,6 @@
   </div>
 
   <!-- Mandatory Google Sign In Overlay -->
-  <div class="mandatory-auth-overlay" id="mandatoryAuthOverlay">
-    <div class="mandatory-auth-card">
-      <div class="mandatory-auth-logo">CENIN<span>.</span></div>
-      <h2>Secure Access Required</h2>
-      <p>To view your personal profile, check order tracking status, and manage your Cenin wallet balance, please sign in securely with Google.</p>
-      
-      <button class="mandatory-google-btn" id="profileGoogleSignInBtn" onclick="window.triggerGoogleSignIn()">
-        Continue with Google
-      </button>
-    </div>
-  </div>
 
   <!-- =========================================
        MAIN PROFILE VIEW
@@ -1864,50 +1771,6 @@
 
   <!-- Firebase Integration -->
   <script type="module">
-    // ── Cenin Google Sign-In (self-contained) ──────────────────────────────
-    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-    const _cfg = { apiKey:"AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM", authDomain:"ceninasia.firebaseapp.com", projectId:"ceninasia", storageBucket:"ceninasia.firebasestorage.app", messagingSenderId:"234745308370", appId:"1:234745308370:web:77a89729fa6d829d37390b" };
-    const _app  = getApps().length ? getApp() : initializeApp(_cfg);
-    const _auth = getAuth(_app);
-    window.auth = _auth;
-    setPersistence(_auth, browserLocalPersistence).catch(()=>{});
-
-    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    // On load: catch return from Google redirect (mobile flow)
-    getRedirectResult(_auth).then(result => {
-      if (!result || !result.user) return;
-      window.currentUser = result.user;
-      const m = document.getElementById('mandatoryAuthOverlay');
-      if (m) m.classList.remove('active');
-    }).catch(err => {
-      if (err.code !== 'auth/no-current-user') console.error('redirectResult err:', err);
-    });
-
-    window.triggerGoogleSignIn = function() {
-      const btn = document.getElementById('profileGoogleSignInBtn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
-      const provider = new GoogleAuthProvider();
-      provider.addScope('email'); provider.addScope('profile');
-      provider.setCustomParameters({ prompt: 'select_account' });
-      if (isMobile) {
-        signInWithRedirect(_auth, provider);
-      } else {
-        signInWithPopup(_auth, provider).then(r => {
-          window.currentUser = r.user;
-          const m = document.getElementById('mandatoryAuthOverlay');
-          if (m) m.classList.remove('active');
-          if (btn) { btn.disabled = false; btn.textContent = 'Continue with Google'; }
-        }).catch(err => {
-          if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') alert('Sign-In failed: ' + err.message);
-          if (btn) { btn.disabled = false; btn.textContent = 'Continue with Google'; }
-        });
-      }
-    };
-  </script>
-  <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -2249,7 +2112,7 @@
             if (!allowed) return;
 
             window.currentUser = user;
-            document.getElementById('mandatoryAuthOverlay').classList.remove('active');
+
             
             // Populate profile layout details
             const pName = document.getElementById('profileName');
@@ -2306,7 +2169,6 @@
         } else {
             window.currentUser = null;
             window.setupRealtimeOrdersListener(null);
-            document.getElementById('mandatoryAuthOverlay').classList.add('active');
         }
     });
 

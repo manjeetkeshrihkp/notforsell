@@ -306,7 +306,18 @@
     .payment-method-badge { background: rgba(0,0,0,0.1); color: var(--text-muted); font-size: 0.7rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; width: max-content; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
 
     /* =========================================
-
+       AUTH MODAL CSS (Google Sign In)
+    ========================================= */
+    .auth-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 20000; opacity: 0; visibility: hidden; transition: var(--transition-smooth); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+    .auth-modal-overlay.active { opacity: 1; visibility: visible; }
+    .auth-modal { background: var(--bg-primary); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); transform: translateY(20px); transition: var(--transition-smooth); position: relative; }
+    .auth-modal-overlay.active .auth-modal { transform: translateY(0); }
+    .auth-modal h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main); }
+    .auth-modal p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: var(--transition-smooth); color: var(--text-main); }
+    .google-login-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .close-auth-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
+    .close-auth-btn:hover { color: var(--text-main); }
 
     /* =========================================
        WISHLIST ACTION MODAL CSS
@@ -622,9 +633,18 @@
     </div>
   </div>
 
-  <!-- =========================================
-       AUTH LOGIN MODAL (Google Sign In)
-  ========================================= -->
+  <!-- AUTH MODAL FOR CHECKOUT (Google Sign In) -->
+  <div class="auth-modal-overlay" id="authModal">
+    <div class="auth-modal">
+      <button class="close-auth-btn" onclick="document.getElementById('authModal').classList.remove('active')">&times;</button>
+      <h3>Secure Sign In</h3>
+      <p>Please sign in with Google to securely process your checkout, verify your wallet, and track orders.</p>
+      
+      <button class="google-login-btn" id="triggerGoogleSignInBtn" onclick="window.triggerGoogleSignIn()">
+         Continue with Google
+      </button>
+    </div>
+  </div>
 
   <!-- =========================================
        WISHLIST ACTION MODAL
@@ -1922,58 +1942,46 @@
     window.updateDoc = updateDoc;
     window.setDoc = setDoc;
 
-    window.currentUser = null;
-
-    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    // Seamlessly catch redirect sign-in result on page load
-    getRedirectResult(auth).then((result) => {
-        if (result && result.user) {
-            window.currentUser = result.user;
-            if (localStorage.getItem('cenin_checkout_redirect') === 'true') {
-                localStorage.removeItem('cenin_checkout_redirect');
-                // Automatically open the cart and proceed to checkout step
-                setTimeout(() => {
-                    const sidebar = document.getElementById('cartSidebar');
-                    const overlay = document.getElementById('cartOverlay');
-                    if (sidebar) sidebar.classList.add('active');
-                    if (overlay) overlay.classList.add('active');
-                    if (typeof window.renderCartUI === 'function') window.renderCartUI();
-                    window.proceedToCheckoutForm();
-                }, 500);
-            }
-        }
-    }).catch((error) => {
-        console.error("Google Redirect Sign-In error:", error);
-        localStorage.removeItem('cenin_checkout_redirect');
-    });
-
-    window.goToCheckoutForm = async function() {
+    window.goToCheckoutForm = function() {
         if (window.currentUser) {
             window.proceedToCheckoutForm();
-            return;
+        } else {
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.add('active');
+        }
+    };
+
+    window.triggerGoogleSignIn = async function() {
+        const btn = document.getElementById('triggerGoogleSignInBtn');
+        const originalText = btn ? btn.textContent : 'Continue with Google';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
         }
 
-        console.log("Seamlessly initiating Google Sign-in...");
         const provider = new GoogleAuthProvider();
         provider.addScope('email');
         provider.addScope('profile');
         provider.setCustomParameters({ prompt: 'select_account' });
 
         try {
-            localStorage.setItem('cenin_checkout_redirect', 'true');
-            if (isMobile) {
-                await signInWithRedirect(auth, provider);
-            } else {
-                const result = await signInWithPopup(auth, provider);
-                window.currentUser = result.user;
-                localStorage.removeItem('cenin_checkout_redirect');
-                window.proceedToCheckoutForm();
-            }
+            const result = await signInWithPopup(auth, provider);
+            window.currentUser = result.user;
+            
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.remove('active');
+            
+            window.proceedToCheckoutForm();
         } catch (error) {
             console.error("Google Sign-In failed:", error);
-            localStorage.removeItem('cenin_checkout_redirect');
-            alert("Sign-in failed: " + error.message);
+            if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+                alert("Sign-in failed: " + error.message);
+            }
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
     };
 
