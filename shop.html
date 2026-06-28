@@ -1474,15 +1474,19 @@
         }
     };
 
-    window.triggerGoogleSignIn = function() {
-        const provider = new GoogleAuthProvider();
-        provider.addScope('email');
-        provider.addScope('profile');
-        provider.setCustomParameters({ prompt: 'select_account' });
+    // Provider declared once at module level for reuse
+    const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
 
-        const popupPromise = signInWithPopup(auth, provider); // MUST BE FIRST LINE
+    window.triggerGoogleSignIn = function() {
+        // signInWithPopup MUST be called first - before any async/DOM changes
+        // Mobile browsers block popups if anything runs before the user gesture
+        const popupPromise = signInWithPopup(auth, provider);
+
         const btn = document.getElementById('triggerGoogleSignInBtn');
-        const originalText = btn ? btn.textContent : 'Continue with Google';
+        const originalText = btn ? btn.innerHTML : 'Continue with Google';
         if (btn) {
             btn.disabled = true;
             btn.textContent = 'Signing in...';
@@ -1492,10 +1496,10 @@
             window.currentUser = result.user;
             const authModal = document.getElementById('authModal');
             if (authModal) authModal.classList.remove('active');
-            if (btn) btn.textContent = originalText;
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
             window.proceedToCheckoutForm();
         }).catch((error) => {
-            if (btn) btn.textContent = originalText;
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
             // Only fall back to redirect if popup is truly blocked by browser
             if (error.code === "auth/popup-blocked" || 
                 error.code === "auth/operation-not-supported-in-this-environment") {
@@ -3181,4 +3185,4 @@
     loadShopCatalog();
   </script>
 </body>
-</html>   
+  </html>
