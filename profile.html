@@ -1773,7 +1773,7 @@
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
@@ -1787,6 +1787,46 @@
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    // Provider declared at module level
+    const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // Handle redirect result (fallback for popup-blocked browsers)
+    getRedirectResult(auth).then((result) => {
+      if (result && result.user) {
+        window.currentUser = result.user;
+        const authModal = document.getElementById('authModal');
+        if (authModal) authModal.classList.remove('active');
+      }
+    }).catch((e) => console.error('Redirect auth error:', e));
+
+    window.triggerGoogleSignIn = function() {
+        // signInWithPopup MUST be first line - mobile browsers block if anything runs before
+        const popupPromise = signInWithPopup(auth, provider);
+
+        const btn = document.getElementById('triggerGoogleSignInBtn');
+        const originalHTML = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+
+        popupPromise.then((result) => {
+            window.currentUser = result.user;
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.remove('active');
+            if (btn) { btn.disabled = false; btn.innerHTML = originalHTML; }
+        }).catch((error) => {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalHTML; }
+            if (error.code === 'auth/popup-blocked' ||
+                error.code === 'auth/operation-not-supported-in-this-environment') {
+                signInWithRedirect(auth, provider);
+            } else if (error.code !== 'auth/popup-closed-by-user' &&
+                       error.code !== 'auth/cancelled-popup-request') {
+                alert('Sign in failed: ' + error.message);
+            }
+        });
+    };
 
     window.db = db;
     window.auth = auth;
@@ -2690,4 +2730,4 @@
     };
   </script>
 </body>
-</html>
+                                   </html>
