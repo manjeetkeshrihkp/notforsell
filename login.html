@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Authenticating | CENIN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1E1E1E;
+            --text-main: #FFFFFF;
+            --text-muted: #A0A0A0;
+            --accent: #EAB308;
+            --border-color: #333333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { 
+            background: var(--bg-primary); 
+            color: var(--text-main); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden;
+        }
+        .auth-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+        }
+        .logo {
+            font-size: 2.5rem;
+            letter-spacing: 4px;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .status-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .status-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+        .fallback-btn {
+            display: none;
+            margin-top: 1.5rem;
+            background: var(--text-main);
+            color: var(--bg-primary);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">CENIN</div>
+        <div class="spinner" id="spinner"></div>
+        <div class="status-title" id="statusTitle">Authenticating</div>
+        <p class="status-text" id="statusText">Securely connecting to Google...</p>
+        <button class="fallback-btn" id="fallbackBtn" onclick="manualSignIn()">Continue to Google</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
+            authDomain: "ceninasia.firebaseapp.com",
+            projectId: "ceninasia",
+            storageBucket: "ceninasia.firebasestorage.app",
+            messagingSenderId: "234745308370",
+            appId: "1:234745308370:web:77a89729fa6d829d37390b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const statusTitle = document.getElementById('statusTitle');
+        const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
+        const fallbackBtn = document.getElementById('fallbackBtn');
+
+        // Allow manual sign-in if needed
+        window.manualSignIn = function() {
+            signInWithRedirect(auth, provider);
+        };
+
+        async function processAuth() {
+            try {
+                // Check if returning from redirect
+                const result = await getRedirectResult(auth);
+                
+                if (result && result.user) {
+                    statusTitle.innerText = "Success!";
+                    statusText.innerText = "Redirecting you back to the app...";
+                    
+                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+                    setTimeout(() => {
+                        window.location.href = returnUrl;
+                    }, 500);
+                } else {
+                    // Not returning, initiate sign-in
+                    signInWithRedirect(auth, provider);
+                    
+                    // Show fallback button after 3 seconds in case redirect blocked
+                    setTimeout(() => {
+                        spinner.style.display = 'none';
+                        statusTitle.innerText = "Redirect taking too long?";
+                        statusText.innerText = "Tap the button below to sign in.";
+                        fallbackBtn.style.display = 'block';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                spinner.style.display = 'none';
+                statusTitle.innerText = "Authentication Failed";
+                statusText.innerText = error.message;
+                fallbackBtn.innerText = "Try Again";
+                fallbackBtn.style.display = 'block';
+            }
+        }
+
+        processAuth();
+    </script>
+</body>
+</html>
