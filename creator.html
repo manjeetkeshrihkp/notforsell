@@ -2323,11 +2323,14 @@
         const email = user.email.toLowerCase().trim();
         let userIp = "";
         try {
-            const ipRes = await fetch("https://api.ipify.org?format=json");
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const ipRes = await fetch("https://api.ipify.org?format=json", { signal: controller.signal });
+            clearTimeout(timeoutId);
             const ipData = await ipRes.json();
             userIp = ipData.ip || "";
         } catch (e) {
-            console.error("Failed to fetch IP address:", e);
+            userIp = ""; // silently continue, never block auth
         }
         
         try {

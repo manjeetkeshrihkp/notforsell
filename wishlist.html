@@ -1954,7 +1954,13 @@
         }
     };
 
-    window.triggerGoogleSignIn = async function() {
+    window.triggerGoogleSignIn = function() {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const popupPromise = signInWithPopup(auth, provider); // MUST BE FIRST LINE
         const btn = document.getElementById('triggerGoogleSignInBtn');
         const originalText = btn ? btn.textContent : 'Continue with Google';
         if (btn) {
@@ -1962,24 +1968,25 @@
             btn.textContent = 'Signing in...';
         }
 
-        const provider = new GoogleAuthProvider();
-        provider.addScope('email');
-        provider.addScope('profile');
-        provider.setCustomParameters({ prompt: 'select_account' });
-
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (error) {
-            console.error("Google Sign-In failed:", error);
-            if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-                alert("Sign-in failed: " + error.message);
+        popupPromise.then((result) => {
+            window.currentUser = result.user;
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.remove('active');
+            if (btn) btn.textContent = originalText;
+            window.proceedToCheckoutForm();
+        }).catch((error) => {
+            if (btn) btn.textContent = originalText;
+            // Only fall back to redirect if popup is truly blocked by browser
+            if (error.code === "auth/popup-blocked" || 
+                error.code === "auth/operation-not-supported-in-this-environment") {
+                localStorage.setItem('cenin_checkout_redirect', 'true');
+                sessionStorage.setItem('cenin_checkout_redirect', 'true');
+                signInWithRedirect(auth, provider);
+            } else if (error.code !== "auth/popup-closed-by-user" && 
+                       error.code !== "auth/cancelled-popup-request") {
+                alert("Sign in failed: " + error.message);
             }
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = originalText;
-            }
-        }
+        });
     };
 
 
@@ -2140,11 +2147,14 @@
         const email = user.email.toLowerCase().trim();
         let userIp = "";
         try {
-            const ipRes = await fetch("https://api.ipify.org?format=json");
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const ipRes = await fetch("https://api.ipify.org?format=json", { signal: controller.signal });
+            clearTimeout(timeoutId);
             const ipData = await ipRes.json();
             userIp = ipData.ip || "";
         } catch (e) {
-            console.error("Failed to fetch IP address:", e);
+            userIp = ""; // silently continue, never block auth
         }
         
         try {
@@ -2211,6 +2221,9 @@
         if (!allowed) return;
 
         window.currentUser = user;
+
+        const authModal = document.getElementById('authModal');
+        if (authModal) authModal.classList.remove('active');
 
         const emailInput = document.getElementById('chkEmail');
         if (emailInput) {
@@ -2283,16 +2296,19 @@
             }
         }
 
-        if (!isTransit && localStorage.getItem('cenin_checkout_redirect') === 'true') {
+        const needsCheckout = localStorage.getItem('cenin_checkout_redirect') === 'true' 
+                           || sessionStorage.getItem('cenin_checkout_redirect') === 'true';
+        if (needsCheckout) {
             localStorage.removeItem('cenin_checkout_redirect');
+            sessionStorage.removeItem('cenin_checkout_redirect');
+            const sidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            if (sidebar) sidebar.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            window.renderCartUI();
             setTimeout(() => {
-                const sidebar = document.getElementById('cartSidebar');
-                const overlay = document.getElementById('cartOverlay');
-                if (sidebar) sidebar.classList.add('active');
-                if (overlay) overlay.classList.add('active');
-                window.renderCartUI();
-                window.proceedToCheckoutForm();
-            }, 600);
+                if (window.proceedToCheckoutForm) window.proceedToCheckoutForm();
+            }, 400);
         }
 
         window.fetchUserWalletOnBoot();

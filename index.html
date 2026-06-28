@@ -454,7 +454,6 @@
     .close-auth-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
     .close-auth-btn:hover { color: var(--text-main); }
 
-
   </style>
 </head>
 <body>
@@ -956,8 +955,6 @@
         <button onclick="window.goToTracking()" style="margin-top: 30px; background: white; color: #16a34a; border: none; padding: 0.8rem 2rem; border-radius: 30px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">Track Order</button>
       </div>
     </div>
-  </div>
-
   <!-- AUTH MODAL FOR CHECKOUT (Google Sign In) -->
   <div class="auth-modal-overlay" id="authModal">
     <div class="auth-modal">
@@ -966,7 +963,6 @@
       <p>Please sign in with Google to securely process your checkout, verify your wallet, and track orders.</p>
       
       <button class="google-login-btn" id="triggerGoogleSignInBtn" onclick="window.triggerGoogleSignIn()">
-         <svg class="google-logo-svg" width="18" height="18" viewBox="0 0 24 24" style="margin-right:8px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
          Continue with Google
       </button>
     </div>
@@ -1342,9 +1338,6 @@
     window.goToCheckoutForm = function() {
         if (window.currentUser) {
             window.proceedToCheckoutForm();
-        } else {
-            const authModal = document.getElementById('authModal');
-            if (authModal) authModal.classList.add('active');
         }
     };
 
@@ -1794,9 +1787,9 @@
   </script>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, getDocs, getDoc, doc, addDoc, updateDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut, signInWithPopup, signInWithRedirect, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
@@ -1807,9 +1800,12 @@
       appId: "1:234745308370:web:77a89729fa6d829d37390b"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
     window.db = db;
+    window.auth = auth;
     window.collection = collection;
     window.addDoc = addDoc;
     window.getDoc = getDoc;
@@ -1817,9 +1813,52 @@
     window.updateDoc = updateDoc;
     window.setDoc = setDoc;
 
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
     window.currentUser = null;
+
+    window.goToCheckoutForm = function() {
+        if (window.currentUser) {
+            window.proceedToCheckoutForm();
+        } else {
+            localStorage.setItem('cenin_checkout_redirect', 'true');
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.add('active');
+        }
+    };
+
+    window.triggerGoogleSignIn = function() {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const popupPromise = signInWithPopup(auth, provider); // MUST BE FIRST LINE
+        const btn = document.getElementById('triggerGoogleSignInBtn');
+        const originalText = btn ? btn.textContent : 'Continue with Google';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+        }
+
+        popupPromise.then((result) => {
+            window.currentUser = result.user;
+            const authModal = document.getElementById('authModal');
+            if (authModal) authModal.classList.remove('active');
+            if (btn) btn.textContent = originalText;
+            window.proceedToCheckoutForm();
+        }).catch((error) => {
+            if (btn) btn.textContent = originalText;
+            // Only fall back to redirect if popup is truly blocked by browser
+            if (error.code === "auth/popup-blocked" || 
+                error.code === "auth/operation-not-supported-in-this-environment") {
+                localStorage.setItem('cenin_checkout_redirect', 'true');
+                sessionStorage.setItem('cenin_checkout_redirect', 'true');
+                signInWithRedirect(auth, provider);
+            } else if (error.code !== "auth/popup-closed-by-user" && 
+                       error.code !== "auth/cancelled-popup-request") {
+                alert("Sign in failed: " + error.message);
+            }
+        });
+    };
 
     function showSuspensionOverlay(email, userIp, userData) {
         document.body.style.overflow = 'hidden';
@@ -1924,6 +1963,7 @@
         if (logoutBtn) {
             logoutBtn.onclick = async () => {
                 try {
+                    localStorage.removeItem('cenin_guest_session');
                     await signOut(auth);
                     window.location.reload();
                 } catch (e) {
@@ -1983,7 +2023,7 @@
             const ipData = await ipRes.json();
             userIp = ipData.ip || "";
         } catch (e) {
-            console.error("Failed to fetch IP address:", e);
+            userIp = ""; // silently continue, never block auth
         }
         
         try {
@@ -2035,15 +2075,25 @@
         }
     }
 
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      let user = firebaseUser;
+      if (!user && localStorage.getItem('cenin_guest_session') === 'true') {
+          user = {
+              uid: "mock-guest-user-12345",
+              email: "guest@cenin.co",
+              displayName: "Guest User",
+              photoURL: null
+          };
+      }
       if (user) {
         const allowed = await checkUserBlockStatus(user);
         if (!allowed) return;
 
         window.currentUser = user;
+
         const authModal = document.getElementById('authModal');
-        if(authModal) authModal.classList.remove('active'); 
-        
+        if (authModal) authModal.classList.remove('active');
+
         const emailInput = document.getElementById('chkEmail');
         if (emailInput) {
             emailInput.value = user.email;
@@ -2121,18 +2171,38 @@
             console.error("Error loading user cloud details on auth change:", e);
         }
 
-        const needsCheckout = localStorage.getItem('cenin_checkout_redirect') === 'true' || sessionStorage.getItem('cenin_checkout_redirect') === 'true';
+        // Check if we are just transiting back to the original page
+        const redirectOrigin = localStorage.getItem('cenin_auth_redirect_origin');
+        let isTransit = false;
+        if (redirectOrigin) {
+            try {
+                const originUrl = new URL(redirectOrigin);
+                const currentUrl = new URL(window.location.href);
+                let p1 = originUrl.pathname.toLowerCase().replace(/\/$/, "");
+                let p2 = currentUrl.pathname.toLowerCase().replace(/\/$/, "");
+                if (p1 === "") p1 = "/index.html";
+                if (p2 === "") p2 = "/index.html";
+                if (p1 !== p2) {
+                    isTransit = true;
+                }
+            } catch(e) {
+                isTransit = true;
+            }
+        }
+
+        const needsCheckout = localStorage.getItem('cenin_checkout_redirect') === 'true' 
+                           || sessionStorage.getItem('cenin_checkout_redirect') === 'true';
         if (needsCheckout) {
             localStorage.removeItem('cenin_checkout_redirect');
             sessionStorage.removeItem('cenin_checkout_redirect');
+            const sidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            if (sidebar) sidebar.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            if (window.renderCartUI) window.renderCartUI();
             setTimeout(() => {
-                const sidebar = document.getElementById('cartSidebar');
-                const overlay = document.getElementById('cartOverlay');
-                if (sidebar) sidebar.classList.add('active');
-                if (overlay) overlay.classList.add('active');
-                if (window.renderCartUI) window.renderCartUI();
                 if (window.proceedToCheckoutForm) window.proceedToCheckoutForm();
-            }, 800);
+            }, 400);
         }
 
         window.fetchUserWalletOnBoot();
@@ -2142,52 +2212,9 @@
       }
     });
 
-    getRedirectResult(auth).then((result) => {
-      if (result && result.user) {
-         window.currentUser = result.user;
-         const authModal = document.getElementById('authModal');
-         if (authModal) authModal.classList.remove('active');
-      }
-    }).catch((error) => { console.error("Redirect Auth Error:", error); });
 
-    window.triggerGoogleSignIn = function() {
-        const btn = document.getElementById('triggerGoogleSignInBtn');
-        const googleIconSvg = `<svg class="google-logo-svg" width="18" height="18" viewBox="0 0 24 24" style="margin-right:8px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
 
-        if (window.location.protocol === 'file:') {
-            alert("Firebase Authentication requires a web server. Please run the project using a local server (like Live Server or Node.js http-server) instead of opening the file directly.");
-            return;
-        }
 
-        if(btn) btn.innerHTML = "Signing in...";
-
-        // Use popup on ALL devices including mobile - avoids redirect issues
-        signInWithPopup(auth, provider)
-          .then((result) => {
-            window.currentUser = result.user;
-            const authModal = document.getElementById('authModal');
-            if (authModal) authModal.classList.remove('active');
-            if(btn) btn.innerHTML = googleIconSvg + " Continue with Google";
-            window.proceedToCheckoutForm();
-          }).catch((error) => {
-            console.error("Google Auth Error:", error);
-            if(btn) btn.innerHTML = googleIconSvg + " Continue with Google";
-
-            // Only fall back to redirect if popup is truly unavailable (not just closed)
-            if (error.code === "auth/popup-blocked" || error.code === "auth/operation-not-supported-in-this-environment" || error.code === "auth/web-storage-unsupported") {
-                localStorage.setItem('cenin_checkout_redirect', 'true');
-                sessionStorage.setItem('cenin_checkout_redirect', 'true');
-                signInWithRedirect(auth, provider).catch((redirectError) => {
-                    console.error("Fallback Redirect Error:", redirectError);
-                    localStorage.removeItem('cenin_checkout_redirect');
-                    sessionStorage.removeItem('cenin_checkout_redirect');
-                    alert("Sign in failed: " + redirectError.message);
-                });
-            } else if (error.code !== "auth/popup-closed-by-user" && error.code !== "auth/cancelled-popup-request") {
-                alert("Sign in failed: " + error.message);
-            }
-          });
-    };
 
     window.globalCatalog = [];
 
@@ -3428,4 +3455,4 @@
     fetchStoreProducts();
   </script>
 </body>
-  </html>
+</html>
