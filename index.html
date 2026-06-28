@@ -1184,8 +1184,6 @@
         delete window.cartItems[id];
         localStorage.setItem('cenin_cart_items_map', JSON.stringify(window.cartItems));
         if (window.syncCartToFirebase) window.syncCartToFirebase();
-        window.updateCartBadge();
-        window.renderCartDrawer();
         window.syncCartCounter();
         window.updateGridCartButtonStates(id);
         window.renderCartUI();
@@ -1211,7 +1209,6 @@
             window.cartItems[productId] = 1;
             localStorage.setItem('cenin_cart_items_map', JSON.stringify(window.cartItems));
             if (window.syncCartToFirebase) window.syncCartToFirebase();
-            window.updateCartBadge();
             window.syncCartCounter();
             window.updateGridCartButtonStates(productId);
         }
@@ -1871,6 +1868,9 @@
         if (logoutBtn) {
             logoutBtn.onclick = async () => {
                 try {
+                    localStorage.removeItem('cenin_cart_items_map');
+                    localStorage.removeItem('cenin_saved_address');
+                    localStorage.removeItem('cenin_saved_items');
                     await signOut(auth);
                     window.location.reload();
                 } catch (e) {
@@ -2041,7 +2041,6 @@
                 const mergedCart = { ...serverCart, ...localCart };
                 localStorage.setItem('cenin_cart_items_map', JSON.stringify(mergedCart));
                 window.cartItems = mergedCart;
-                window.updateCartBadge();
                 await window.setDoc(userRef, { cart: mergedCart }, { merge: true }).catch(e => console.error(e));
             }
         } catch (e) {
@@ -2121,31 +2120,7 @@
         window.updatePaymentFinalTotal();
         window.goToPaymentForm();
     };
-    window.fetchUserWalletOnBoot = async function() {
-        let email = "";
-        if (window.currentUser && window.currentUser.email) {
-            email = window.currentUser.email.toLowerCase().trim();
-        } else {
-            const savedStr = localStorage.getItem('cenin_saved_address');
-            if (savedStr) {
-                try {
-                    email = JSON.parse(savedStr).email.toLowerCase().trim();
-                } catch(e) {}
-            }
-        }
-        if (email) {
-            try {
-                const userRef = window.doc(window.db, "users", email);
-                const userSnap = await window.getDoc(userRef);
-            // Save address to Firebase
-            await window.setDoc(userRef, { address: addrData }, { merge: true }).catch(e => console.error("Address save error", e));
-                if (userSnap.exists()) {
-                    window.currentWalletBalance = Number(userSnap.data().walletBalance) || 0;
-                    window.renderCartUI();
-                }
-            } catch(e) { console.error("Wallet fetch error on boot", e); }
-        }
-    };
+    
     window.updateCouponUsage = async function(coupon, orderId = "") {
         if (coupon && coupon.id) {
             try {
@@ -3201,6 +3176,8 @@
 });
 </script>
 
+
+
 <!-- Premium Remove Confirmation Modal -->
 <div id="removeConfirmModal" class="custom-modal-overlay">
     <div class="custom-modal">
@@ -3272,6 +3249,14 @@ window.confirmRemove = function() {
     document.getElementById('removeConfirmModal').classList.remove('active');
 };
 </script>
-
+<script>
+// Bulletproof Modal Z-Index Fix
+document.addEventListener('DOMContentLoaded', () => {
+    const rmModal = document.getElementById('removeConfirmModal');
+    if (rmModal) document.body.appendChild(rmModal);
+    const wlModal = document.getElementById('wishlistActionModal');
+    if (wlModal) document.body.appendChild(wlModal);
+});
+</script>
 </body>
 </html>

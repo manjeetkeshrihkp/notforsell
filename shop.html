@@ -1585,6 +1585,9 @@
             logoutBtn.onclick = async () => {
                 try {
                     localStorage.removeItem('cenin_guest_session');
+                    localStorage.removeItem('cenin_cart_items_map');
+                    localStorage.removeItem('cenin_saved_address');
+                    localStorage.removeItem('cenin_saved_items');
                     await signOut(auth);
                     window.location.reload();
                 } catch (e) {
@@ -1842,40 +1845,7 @@
         window.updatePaymentFinalTotal();
         window.goToPaymentForm();
     };
-    window.fetchUserWalletOnBoot = async function() {
-        // Priority 1: Check Google authenticated user first
-        if (window.currentUser && window.currentUser.email) {
-            try {
-                const email = window.currentUser.email.toLowerCase().trim();
-                const userRef = window.doc(window.db, "users", email);
-                const userSnap = await window.getDoc(userRef);
-            // Save address to Firebase
-            await window.setDoc(userRef, { address: addrData }, { merge: true }).catch(e => console.error("Address save error", e));
-                if (userSnap.exists()) {
-                    window.currentWalletBalance = Number(userSnap.data().walletBalance) || 0;
-                    return; // exit early if we got balance from authenticated email
-                }
-            } catch(e) {
-                console.error("Authenticated wallet fetch error:", e);
-            }
-        }
-        // Fallback to local storage saved address
-        const savedStr = localStorage.getItem('cenin_saved_address');
-        if(savedStr) {
-            try {
-                const email = JSON.parse(savedStr).email.toLowerCase().trim();
-                if(email) {
-                    const userRef = window.doc(window.db, "users", email);
-                    const userSnap = await window.getDoc(userRef);
-            // Save address to Firebase
-            await window.setDoc(userRef, { address: addrData }, { merge: true }).catch(e => console.error("Address save error", e));
-                    if(userSnap.exists()) {
-                        window.currentWalletBalance = Number(userSnap.data().walletBalance) || 0;
-                    }
-                }
-            } catch(e) { console.error("Wallet fetch error on boot", e); }
-        }
-    };
+    
     // COUPON LIMIT UPDATE ENGINE & ANTI CHEAT
     window.updateCouponUsage = async function(coupon, orderId = "") {
         if (coupon && coupon.id) {
@@ -3002,6 +2972,8 @@
 });
 </script>
 
+
+
 <!-- Premium Remove Confirmation Modal -->
 <div id="removeConfirmModal" class="custom-modal-overlay">
     <div class="custom-modal">
@@ -3073,6 +3045,14 @@ window.confirmRemove = function() {
     document.getElementById('removeConfirmModal').classList.remove('active');
 };
 </script>
-
+<script>
+// Bulletproof Modal Z-Index Fix
+document.addEventListener('DOMContentLoaded', () => {
+    const rmModal = document.getElementById('removeConfirmModal');
+    if (rmModal) document.body.appendChild(rmModal);
+    const wlModal = document.getElementById('wishlistActionModal');
+    if (wlModal) document.body.appendChild(wlModal);
+});
+</script>
 </body>
 </html>   

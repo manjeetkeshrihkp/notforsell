@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -2395,6 +2395,9 @@
             logoutBtn.onclick = async () => {
                 try {
                     localStorage.removeItem('cenin_guest_session');
+                    localStorage.removeItem('cenin_cart_items_map');
+                    localStorage.removeItem('cenin_saved_address');
+                    localStorage.removeItem('cenin_saved_items');
                     await signOut(auth);
                     window.location.reload();
                 } catch (e) {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -2052,6 +2052,9 @@
         if (logoutBtn) {
             logoutBtn.onclick = async () => {
                 try {
+                    localStorage.removeItem('cenin_cart_items_map');
+                    localStorage.removeItem('cenin_saved_address');
+                    localStorage.removeItem('cenin_saved_items');
                     await signOut(auth);
                     window.location.reload();
                 } catch (e) {
@@ -2230,7 +2233,10 @@
         window.showConfirmDialog("Are you sure you want to sign out?", async () => {
             try {
                 localStorage.removeItem('cenin_guest_session');
-                await signOut(auth);
+                localStorage.removeItem('cenin_cart_items_map');
+                    localStorage.removeItem('cenin_saved_address');
+                    localStorage.removeItem('cenin_saved_items');
+                    await signOut(auth);
                 window.location.reload();
             } catch(err) {
                 console.error("Sign out error:", err);

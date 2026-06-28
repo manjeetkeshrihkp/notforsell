@@ -296,21 +296,21 @@
     /* =========================================
        WISHLIST ACTION MODAL CSS
     ========================================= */
-    .wishlist-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 20000; opacity: 0; visibility: hidden; transition: var(--transition-smooth); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+    .wishlist-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 100000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
     .wishlist-modal-overlay.active { opacity: 1; visibility: visible; }
-    .wishlist-modal { background: var(--bg-primary); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); transform: translateY(20px); transition: var(--transition-smooth); position: relative; }
-    .wishlist-modal-overlay.active .wishlist-modal { transform: translateY(0); }
-    .wishlist-modal h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main); }
-    .wishlist-modal p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
-    .wishlist-modal-actions { display: flex; flex-direction: column; gap: 12px; }
-    .wishlist-modal-btn { width: 100%; padding: 0.9rem; border-radius: 30px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: var(--transition-smooth); text-transform: uppercase; letter-spacing: 0.5px; border: none; }
+    .wishlist-modal { background: var(--bg-primary); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; width: 90%; max-width: 320px; text-align: center; transform: scale(0.95) translateY(10px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+    .wishlist-modal-overlay.active .wishlist-modal { transform: scale(1) translateY(0); }
+    .wishlist-modal h3 { margin: 0 0 0.8rem 0; font-size: 1.1rem; color: var(--text-main); font-weight: 800; }
+    .wishlist-modal p { margin: 0 0 1.5rem 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+    .wishlist-modal-actions { display: flex; flex-direction: column; gap: 0.5rem; justify-content: center; }
+    .wishlist-modal-btn { width: 100%; padding: 0.7rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; border: none; }
     .wishlist-btn-cart { background: var(--text-main); color: var(--bg-primary); }
     .wishlist-btn-cart:hover { opacity: 0.9; transform: translateY(-1px); }
-    .wishlist-btn-remove { background: #ef4444; color: white; }
+    .wishlist-btn-remove { background: #ef4444; color: #fff; }
     .wishlist-btn-remove:hover { background: #dc2626; transform: translateY(-1px); }
-    .wishlist-btn-cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+    .wishlist-btn-cancel { background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); }
     .wishlist-btn-cancel:hover { background: var(--bg-secondary); }
-    .close-wishlist-modal-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
+    .close-wishlist-modal-btn { display: none; }
     .close-wishlist-modal-btn:hover { color: var(--text-main); }
     }
     /* Premium Loader */
@@ -471,7 +471,9 @@
   };
 </script>
 
-  <!-- =========================================
+  
+  </div>
+<!-- =========================================
        MAIN WISHLIST VIEW
   ========================================= -->
   <div id="mainWishlistView">
@@ -754,18 +756,7 @@
   <!-- =========================================
        WISHLIST ACTION MODAL
   ========================================= -->
-  <div class="wishlist-modal-overlay" id="wishlistActionModal" onclick="if(event.target === this) window.closeWishlistActionModal()">
-    <div class="wishlist-modal">
-      <button class="close-wishlist-modal-btn" onclick="window.closeWishlistActionModal()">&times;</button>
-      <h3>Manage Wishlist Item</h3>
-      <p id="wishlistActionModalMessage">Do you want to add this item to your cart or remove it from your wishlist?</p>
-      <div class="wishlist-modal-actions">
-        <button class="wishlist-modal-btn wishlist-btn-cart" id="wishlistModalAddToCartBtn">Add To Cart</button>
-        <button class="wishlist-modal-btn wishlist-btn-remove" id="wishlistModalRemoveBtn">Remove from Wishlist</button>
-        <button class="wishlist-modal-btn wishlist-btn-cancel" onclick="window.closeWishlistActionModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
+  
   <!-- Bottom App Navigation -->
   <nav class="bottom-nav" id="bottomNavBar">
     <a href="index.html" class="nav-item">
@@ -1987,7 +1978,10 @@
              logoutBtn.onclick = async () => {
                  try {
                      localStorage.removeItem('cenin_guest_session');
-                     await signOut(auth);
+                     localStorage.removeItem('cenin_cart_items_map');
+                    localStorage.removeItem('cenin_saved_address');
+                    localStorage.removeItem('cenin_saved_items');
+                    await signOut(auth);
                      window.location.reload();
                  } catch (e) {
                      console.error("Sign out failed:", e);
@@ -2813,6 +2807,8 @@
 });
 </script>
 
+
+
 <!-- Premium Remove Confirmation Modal -->
 <div id="removeConfirmModal" class="custom-modal-overlay">
     <div class="custom-modal">
@@ -2885,5 +2881,26 @@ window.confirmRemove = function() {
 };
 </script>
 
+<div class="wishlist-modal-overlay" id="wishlistActionModal" onclick="if(event.target === this) window.closeWishlistActionModal()">
+    <div class="wishlist-modal">
+      <button class="close-wishlist-modal-btn" onclick="window.closeWishlistActionModal()">&times;</button>
+      <h3>Manage Wishlist Item</h3>
+      <p id="wishlistActionModalMessage">Do you want to add this item to your cart or remove it from your wishlist?</p>
+      <div class="wishlist-modal-actions">
+        <button class="wishlist-modal-btn wishlist-btn-cart" id="wishlistModalAddToCartBtn">Add To Cart</button>
+        <button class="wishlist-modal-btn wishlist-btn-remove" id="wishlistModalRemoveBtn">Remove from Wishlist</button>
+        <button class="wishlist-modal-btn wishlist-btn-cancel" onclick="window.closeWishlistActionModal()">Cancel</button>
+      </div>
+    </div>
+</div>
+<script>
+// Bulletproof Modal Z-Index Fix
+document.addEventListener('DOMContentLoaded', () => {
+    const rmModal = document.getElementById('removeConfirmModal');
+    if (rmModal) document.body.appendChild(rmModal);
+    const wlModal = document.getElementById('wishlistActionModal');
+    if (wlModal) document.body.appendChild(wlModal);
+});
+</script>
 </body>
 </html>
