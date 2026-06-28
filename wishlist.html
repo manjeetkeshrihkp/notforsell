@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -166,7 +166,7 @@
     .fp-pricing { display: flex; align-items: baseline; gap: 15px; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .fp-offer-price { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
     .fp-cut-price { font-size: 1rem; color: var(--text-muted); text-decoration: line-through; font-weight: 500;}
-    .fp-discount-badge { color: #16a34a; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 4px; background: rgba(22,163,74,0.1); padding: 4px 8px; border-radius: 4px; }
+    .fp-discount-badge { color: #16a34a; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 4px; background: rgba(22₹63,74,0.1); padding: 4px 8px; border-radius: 4px; }
     .fp-desc { color: var(--text-muted); font-size: 1rem; line-height: 1.6; margin-bottom: 2rem; }
     .fp-promo-banner { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 2rem; border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; }
     .fp-promo-banner img { width: 100%; height: auto; object-fit: cover; }
@@ -218,7 +218,7 @@
     .cart-item-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .cart-item-cut { font-size: 0.75rem; text-decoration: line-through; color: var(--text-muted); opacity: 0.8; font-weight: 500;}
     .cart-item-offer { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
-    .cart-item-pct { font-size: 0.7rem; font-weight: 700; color: #16a34a; background: rgba(22,163,74,0.1); padding: 2px 6px; border-radius: 4px; }
+    .cart-item-pct { font-size: 0.7rem; font-weight: 700; color: #16a34a; background: rgba(22₹63,74,0.1); padding: 2px 6px; border-radius: 4px; }
     .cart-item-ctrls-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem; }
     .qty-selector { display: flex; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
     .qty-btn { background: transparent; border: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: var(--text-main); cursor: pointer; transition: var(--transition-smooth); }
@@ -385,16 +385,78 @@
 </style>
 </head>
 <body>
-<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.4s ease, visibility 0.4s ease;">
-    <h1 style="font-family:'Inter', sans-serif; font-size: 2.5rem; letter-spacing: 4px; font-weight:800; color:var(--text-main); margin-bottom:0.5rem; position:relative; overflow:hidden;">
-        CENIN
-        <span style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(234,179,8,0.5), transparent); animation: shimmer 1.5s infinite; background-size: 200% 100%; -webkit-background-clip: text; color: transparent;">CENIN</span>
-    </h1>
-    <p style="font-size:0.8rem; color:var(--text-muted); letter-spacing: 6px; text-transform:uppercase;">Jewelry</p>
+<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;">
+    <div class="cenin-premium-loader">
+        <div class="brand-text">CENIN</div>
+        <div class="brand-subtext">JEWELRY</div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+    </div>
     <style>
-      @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
+      .cenin-premium-loader {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+      }
+      .brand-text {
+          font-family: 'Inter', sans-serif;
+          font-size: 2.8rem;
+          font-weight: 900;
+          color: #ffffff;
+          letter-spacing: 10px;
+          margin-bottom: 0.2rem;
+          margin-right: -10px; /* offset for exact center due to letter spacing */
+          text-transform: uppercase;
+          background: linear-gradient(to right, #ffffff 20%, #71717a 40%, #71717a 60%, #ffffff 80%);
+          background-size: 200% auto;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shine 2.5s linear infinite, scaleUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .brand-subtext {
+          font-size: 0.7rem;
+          color: #6b7280;
+          letter-spacing: 12px;
+          text-transform: uppercase;
+          font-weight: 400;
+          opacity: 0;
+          animation: fadeInSub 1s ease forwards 0.5s;
+          margin-right: -12px; /* offset for centering */
+      }
+      .progress-line {
+          width: 60px;
+          height: 2px;
+          background: rgba(255,255,255,0.08);
+          margin-top: 1.8rem;
+          position: relative;
+          overflow: hidden;
+          border-radius: 2px;
+      }
+      .progress-fill {
+          position: absolute;
+          top: 0; left: 0;
+          height: 100%;
+          width: 50%;
+          background: #ffffff;
+          border-radius: 2px;
+          animation: loadProgress 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      @keyframes shine {
+          to { background-position: 200% center; }
+      }
+      @keyframes scaleUp {
+          from { transform: scale(0.9); opacity: 0; filter: blur(8px); }
+          to { transform: scale(1); opacity: 1; filter: blur(0); }
+      }
+      @keyframes fadeInSub {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes loadProgress {
+          0% { left: -50%; width: 50%; }
+          50% { left: 25%; width: 50%; }
+          100% { left: 100%; width: 50%; }
       }
     </style>
 </div>
@@ -452,9 +514,9 @@
         <button class="save-btn fp-save-btn" id="fpSaveBtn" aria-label="Save" style="position: absolute; top: 8px; right: 8px; z-index: 10;">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         </button>
-        <button class="fp-nav-btn fp-prev" id="fpPrevBtn" onclick="window.slideFPMedia(-1)">❮</button>
+        <button class="fp-nav-btn fp-prev" id="fpPrevBtn" onclick="window.slideFPMedia(-1)">â®</button>
         <div class="fp-media-slider" id="fpMediaSlider"></div>
-        <button class="fp-nav-btn fp-next" id="fpNextBtn" onclick="window.slideFPMedia(1)">❯</button>
+        <button class="fp-nav-btn fp-next" id="fpNextBtn" onclick="window.slideFPMedia(1)">â¯</button>
       </div>
       <div class="fp-details">
         <h2 class="fp-title" id="fpTitle">Product Title</h2>
@@ -728,7 +790,9 @@
     </a>
 <script>
     window.cartItems = JSON.parse(localStorage.getItem('cenin_cart_items_map')) || {};
-    window.globalCatalog = []; // Initialize globally early to prevent undefined errors
+    for (let id in window.cartItems) { if (typeof window.cartItems[id] !== 'number') window.cartItems[id] = 1; }
+    localStorage.setItem('cenin_cart_items_map', JSON.stringify(window.cartItems));
+    window.shopCatalog = []; // Initialize globally early to prevent undefined errors
     window.globalDeliveryFee = 0; 
     window.appliedCoupon = JSON.parse(localStorage.getItem('cenin_applied_coupon')) || null;
     window.upiTimerInterval = null;
@@ -811,7 +875,7 @@
         window.renderCartUI();
     };
     window.updateGridCartButtonStates = function(id) {
-        const product = window.globalCatalog ? window.globalCatalog.find(p => p.id === id) : null;
+        const product = window.shopCatalog ? window.shopCatalog.find(p => p.id === id) : null;
         const isOutOfStock = product && Number(product.stock) <= 0;
         const inCart = !!window.cartItems[id];
         document.querySelectorAll(`.cart-btn-sync[data-id="${id}"]`).forEach(btn => {
@@ -900,7 +964,7 @@
     window.getCartGrandTotal = function() {
         let finalItemsTotal = 0;
         for (let id in window.cartItems) {
-            const product = window.globalCatalog.find(p => p.id === id);
+            const product = window.shopCatalog.find(p => p.id === id);
             if (product) {
                 const qty = window.cartItems[id];
                 const unitOrigPrice = Number(product.price);
@@ -1033,13 +1097,13 @@
     window.renderCartUI = function() {
         const container = document.getElementById('cartItemsContainer');
         const summaryContainer = document.getElementById('cartSummaryContainer');
-        if (!container || !window.globalCatalog) return;
+        if (!container || !window.shopCatalog) return;
         let html = '';
         let subtotal = 0;
         let finalItemsTotal = 0;
         let hasItems = false;
         for (let id in window.cartItems) {
-            const product = window.globalCatalog.find(p => p.id === id);
+            const product = window.shopCatalog.find(p => p.id === id);
             if (product) {
                 hasItems = true;
                 const qty = window.cartItems[id];
@@ -1129,15 +1193,15 @@
         window.finalPayableAmount = grandTotal;
         let deliveryText = delivery === 0 ? '<span class="summary-row free" style="margin:0;">Free</span>' : window.formatPrice(delivery);
         // Shipping Methods Options choice
-        let shippingOptionsHTML = '';
+                let shippingOptionsHTML = '';
         const settings = window.deliverySettings || {};
         if (settings.offerExpressDelivery) {
             const standardSLA = settings.sla || "3-5 Business Days";
             const expressSLA = settings.expressSLA || "1-2 Business Days";
             const baseStandardFee = window.calculateActiveStandardFee(settings);
             const standardFeeAmt = (settings.offerFreeThreshold && settings.minOrder && finalItemsTotal >= settings.minOrder) ? 0 : baseStandardFee;
-            const standardFeeTxt = standardFeeAmt === 0 ? 'Free' : `₹${standardFeeAmt}`;
-            const expressFeeTxt = `₹${settings.expressFee || 0}`;
+            const standardFeeTxt = standardFeeAmt === 0 ? 'Free' : '₹' + standardFeeAmt;
+            const expressFeeTxt = '₹' + (settings.expressFee || 0);
             shippingOptionsHTML = `
               <div class="shipping-options" style="display: flex; flex-direction: column; gap: 0.6rem; text-align: left; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 1rem 0; margin: 0.8rem 0;">
                 <span style="font-size: 0.7rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Shipping Method</span>
@@ -1145,14 +1209,14 @@
                   <div onclick="window.selectShippingOption('standard')" style="flex: 1; padding: 0.7rem; border-radius: 8px; border: 1.5px solid ${window.selectedShippingOption !== 'express' ? 'var(--text-main)' : 'var(--border-color)'}; background: ${window.selectedShippingOption !== 'express' ? 'rgba(0,0,0,0.02)' : 'var(--bg-primary)'}; cursor: pointer; transition: all 0.2s; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                       <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption !== 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">Standard</span>
-                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption !== 'express' ? 'var(--accent)' : 'var(--text-muted)'};">${standardFeeTxt}</span>
+                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption !== 'express' ? 'var(--accent)' : 'var(--text-muted)'};">` + standardFeeTxt + `</span>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">${standardSLA}</span>
                   </div>
                   <div onclick="window.selectShippingOption('express')" style="flex: 1; padding: 0.7rem; border-radius: 8px; border: 1.5px solid ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--border-color)'}; background: ${window.selectedShippingOption === 'express' ? 'rgba(0,0,0,0.02)' : 'var(--bg-primary)'}; cursor: pointer; transition: all 0.2s; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                       <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">⚡ Express</span>
-                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption === 'express' ? 'var(--accent)' : 'var(--text-muted)'};">${expressFeeTxt}</span>
+                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption === 'express' ? 'var(--accent)' : 'var(--text-muted)'};">` + expressFeeTxt + `</span>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">${expressSLA}</span>
                   </div>
@@ -1358,11 +1422,11 @@
     window.renderWishlist = function() {
         const grid = document.getElementById('wishlistGrid');
         if(!grid) return;
-        if (!window.globalCatalog || window.globalCatalog.length === 0) {
+        if (!window.shopCatalog || window.shopCatalog.length === 0) {
             grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; padding: 2rem; color: var(--text-muted); font-weight: 600;">Loading your wishlist...</p>`;
             return;
         }
-        const wishlistItems = window.globalCatalog.filter(item => window.savedProducts.has(item.id));
+        const wishlistItems = window.shopCatalog.filter(item => window.savedProducts.has(item.id));
         if (wishlistItems.length === 0) {
             grid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 4rem 1rem;">
@@ -1441,7 +1505,7 @@
       }
     };
     window.showWishlistActionModal = function(id, btn) {
-        const product = window.globalCatalog.find(p => p.id === id);
+        const product = window.shopCatalog.find(p => p.id === id);
         const name = product ? (product.name || 'this item') : 'this item';
         const modal = document.getElementById('wishlistActionModal');
         const msg = document.getElementById('wishlistActionModalMessage');
@@ -1490,7 +1554,7 @@
         if (modal) modal.classList.remove('active');
     };
     window.openProductPage = function(productId) {
-      const product = window.globalCatalog.find(p => p.id === productId);
+      const product = window.shopCatalog.find(p => p.id === productId);
       if(!product) return;
       document.getElementById('bottomNavBar').style.display = 'none';
       const sliderContainer = document.getElementById('fpMediaSlider');
@@ -1584,7 +1648,7 @@
               fpStickyCartBtn.innerText = "Add To Cart"; fpStickyCartBtn.style.backgroundColor = "transparent"; fpStickyCartBtn.style.color = "var(--text-main)"; fpStickyCartBtn.style.borderColor = "var(--border-color)";
           }
       }
-      const allOtherProducts = window.globalCatalog.filter(p => p.id !== product.id);
+      const allOtherProducts = window.shopCatalog.filter(p => p.id !== product.id);
       // STRICT GENDER MATCHING FOR EXPLORE MORE & SIMILAR PIECES
       let genderFilteredProducts = allOtherProducts;
       if (product.gender && product.gender !== 'both' && product.gender !== 'unisex' && product.gender !== 'all' && product.gender !== '') {
@@ -1878,12 +1942,12 @@
         } else if (appealStatus === "pending") {
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">⏳</span>
+                <span style="font-size:2rem;">â³</span>
             `;
         } else if (appealStatus === "rejected") {
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">❌</span>
+                <span style="font-size:2rem;">âŒ</span>
                 <h3 style="font-size:1.05rem; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Rejected</h3>
                 <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Your appeal has been reviewed and rejected. This suspension is permanent and cannot be appealed again.</p>
               </div>
@@ -1891,7 +1955,7 @@
         } else if (appealStatus === "approved") {
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">✅</span>
+                <span style="font-size:2rem;">âœ…</span>
                 <h3 style="font-size:1.05rem; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Approved</h3>
                 <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Good news! Your appeal has been approved. Access to your account is restored.</p>
                 <button onclick="window.location.reload()" style="background:#4ade80; color:#000; border:none; padding:0.7rem 1.2rem; border-radius:6px; font-weight:800; font-size:0.85rem; cursor:pointer; text-transform:uppercase; margin-top:0.5rem; font-family:inherit;">
@@ -2200,7 +2264,7 @@
             // 3. Minimum Purchase Check
             let finalItemsTotal = 0;
             for (let id in window.cartItems) {
-                const product = window.globalCatalog.find(p => p.id === id);
+                const product = window.shopCatalog.find(p => p.id === id);
                 if (product) {
                     const qty = window.cartItems[id];
                     const unitOrigPrice = Number(product.price);
@@ -2404,7 +2468,7 @@
             } catch(e) { console.error("Wallet fetch error on boot", e); }
         }
     };
-    window.globalCatalog = window.globalCatalog || [];
+    window.shopCatalog = window.shopCatalog || [];
     async function fetchStoreProducts() {
       try {
         const settingsPromise = getDoc(doc(db, "settings", "delivery")).catch(e => null);
@@ -2417,7 +2481,7 @@
         querySnapshot.forEach((doc) => {
           const item = doc.data();
           item.id = doc.id; 
-          window.globalCatalog.push(item);
+          window.shopCatalog.push(item);
         });
         window.renderWishlist();
         // UPI session restore and wallet fetch on boot
@@ -2600,7 +2664,7 @@
             const autoplayParam = chosenCampaign.autoplay ? 'autoplay=1&mute=1&' : '';
             mediaContent = `
               <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; background:#000; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
-                <iframe src="https://www.youtube.com/embed/${videoId}?${autoplayParam}playsinline=1&enablejsapi=1&rel=0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <iframe src="https://www.youtube.com/embed/${videoId}₹${autoplayParam}playsinline=1&enablejsapi=1&rel=0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
               </div>
             `;
         } else {
@@ -2612,7 +2676,7 @@
         }
         const buttonHtml = chosenCampaign.buttonText ? `
           <div style="display:flex; justify-content:center; margin-top:4px; width:100%;">
-            <a href="${chosenCampaign.buttonLink || '#'}" target="_blank" style="display:inline-block; width:100%; text-align:center; background:#EAB308; color:#000; border:none; padding:0.75rem 1.5rem; border-radius:10px; font-weight:800; font-size:0.85rem; text-decoration:none; text-transform:uppercase; transition:all 0.2s; box-shadow:0 4px 12px rgba(234,179,8,0.25);">
+            <a href="${chosenCampaign.buttonLink || '#'}" target="_blank" style="display:inline-block; width:100%; text-align:center; background:#EAB308; color:#000; border:none; padding:0.75rem 1.5rem; border-radius:10px; font-weight:800; font-size:0.85rem; text-decoration:none; text-transform:uppercase; transition:all 0.2s; box-shadow:0 4px 12px rgba(234₹79,8,0.25);">
               ${chosenCampaign.buttonText}
             </a>
           </div>
@@ -2621,7 +2685,7 @@
           <div style="background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; margin-top:4px; box-sizing:border-box;">
             <span style="font-size:0.75rem; color:#a1a1aa; font-weight:500; font-family:system-ui, -apple-system, sans-serif;">Use Coupon Code:</span>
             <div style="display:flex; align-items:center; gap:8px;">
-              <code style="background:rgba(234,179,8,0.1); color:#EAB308; font-size:0.85rem; font-weight:700; padding:4px 8px; border-radius:6px; letter-spacing:1px; font-family:monospace;">${chosenCampaign.couponCode}</code>
+              <code style="background:rgba(234₹79,8,0.1); color:#EAB308; font-size:0.85rem; font-weight:700; padding:4px 8px; border-radius:6px; letter-spacing:1px; font-family:monospace;">${chosenCampaign.couponCode}</code>
               <button type="button" onclick="window.copyCampaignCoupon('${chosenCampaign.couponCode}', this)" style="background:#EAB308; border:none; color:#000; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer; text-transform:uppercase; transition:all 0.2s; font-family:system-ui, -apple-system, sans-serif;">Copy</button>
             </div>
           </div>
@@ -2639,7 +2703,7 @@
         const popupHtml = `
           <div id="campaignPopupOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:99999; display:flex; justify-content:center; align-items:center; opacity:0; transition:opacity 0.4s ease; box-sizing:border-box;">
             <div style="position:relative; width:90%; max-width:600px; background:rgba(20,20,20,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:1.8rem; box-shadow:0 25px 60px rgba(0,0,0,0.8); transform:scale(0.85); transition:transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing:border-box; display:flex; flex-direction:column; gap:12px;">
-              <button type="button" id="campaignCloseBtn" onclick="window.closeCampaignPopup()" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; width:32px; height:32px; border-radius:50%; display:${showCloseBtn ? 'flex' : 'none'}; justify-content:center; align-items:center; cursor:pointer; font-weight:bold; font-size:14px; transition:all 0.2s; z-index:10;">✕</button>
+              <button type="button" id="campaignCloseBtn" onclick="window.closeCampaignPopup()" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; width:32px; height:32px; border-radius:50%; display:${showCloseBtn ? 'flex' : 'none'}; justify-content:center; align-items:center; cursor:pointer; font-weight:bold; font-size:14px; transition:all 0.2s; z-index:10;">âœ•</button>
               ${skipTimerHtml}
               ${headingHtml}
               <div style="width:100%;">
@@ -2690,7 +2754,7 @@
             toast.style.color = '#fff';
             toast.style.padding = '12px 24px';
             toast.style.borderRadius = '30px';
-            toast.style.boxShadow = '0 10px 25px rgba(34,197,94,0.3)';
+            toast.style.boxShadow = '0 10px 25px rgba(34₹97,94,0.3)';
             toast.style.fontSize = '0.9rem';
             toast.style.fontWeight = 'bold';
             toast.style.zIndex = '999999';

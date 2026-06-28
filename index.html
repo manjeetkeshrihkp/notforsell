@@ -288,7 +288,7 @@
     .fp-pricing { display: flex; align-items: baseline; gap: 15px; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .fp-offer-price { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
     .fp-cut-price { font-size: 1rem; color: var(--text-muted); text-decoration: line-through; font-weight: 500;}
-    .fp-discount-badge { color: #16a34a; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 4px; background: rgba(22,163,74,0.1); padding: 4px 8px; border-radius: 4px; }
+    .fp-discount-badge { color: #16a34a; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 4px; background: rgba(22₹63,74,0.1); padding: 4px 8px; border-radius: 4px; }
     .fp-desc { color: var(--text-muted); font-size: 1rem; line-height: 1.6; margin-bottom: 2rem; }
     .fp-promo-banner { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 2rem; border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; }
     .fp-promo-banner img { width: 100%; height: auto; object-fit: cover; }
@@ -337,7 +337,7 @@
     .cart-item-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .cart-item-cut { font-size: 0.75rem; text-decoration: line-through; color: var(--text-muted); opacity: 0.8; font-weight: 500;}
     .cart-item-offer { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
-    .cart-item-pct { font-size: 0.7rem; font-weight: 700; color: #16a34a; background: rgba(22,163,74,0.1); padding: 2px 6px; border-radius: 4px; }
+    .cart-item-pct { font-size: 0.7rem; font-weight: 700; color: #16a34a; background: rgba(22₹63,74,0.1); padding: 2px 6px; border-radius: 4px; }
     .cart-item-ctrls-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem; }
     .qty-selector { display: flex; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
     .qty-btn { background: transparent; border: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 600; color: var(--text-main); cursor: pointer; transition: var(--transition-smooth); }
@@ -477,16 +477,78 @@
 </style>
 </head>
 <body>
-<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.4s ease, visibility 0.4s ease;">
-    <h1 style="font-family:'Inter', sans-serif; font-size: 2.5rem; letter-spacing: 4px; font-weight:800; color:var(--text-main); margin-bottom:0.5rem; position:relative; overflow:hidden;">
-        CENIN
-        <span style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(234,179,8,0.5), transparent); animation: shimmer 1.5s infinite; background-size: 200% 100%; -webkit-background-clip: text; color: transparent;">CENIN</span>
-    </h1>
-    <p style="font-size:0.8rem; color:var(--text-muted); letter-spacing: 6px; text-transform:uppercase;">Jewelry</p>
+<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;">
+    <div class="cenin-premium-loader">
+        <div class="brand-text">CENIN</div>
+        <div class="brand-subtext">JEWELRY</div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+    </div>
     <style>
-      @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
+      .cenin-premium-loader {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+      }
+      .brand-text {
+          font-family: 'Inter', sans-serif;
+          font-size: 2.8rem;
+          font-weight: 900;
+          color: #ffffff;
+          letter-spacing: 10px;
+          margin-bottom: 0.2rem;
+          margin-right: -10px; /* offset for exact center due to letter spacing */
+          text-transform: uppercase;
+          background: linear-gradient(to right, #ffffff 20%, #71717a 40%, #71717a 60%, #ffffff 80%);
+          background-size: 200% auto;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shine 2.5s linear infinite, scaleUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .brand-subtext {
+          font-size: 0.7rem;
+          color: #6b7280;
+          letter-spacing: 12px;
+          text-transform: uppercase;
+          font-weight: 400;
+          opacity: 0;
+          animation: fadeInSub 1s ease forwards 0.5s;
+          margin-right: -12px; /* offset for centering */
+      }
+      .progress-line {
+          width: 60px;
+          height: 2px;
+          background: rgba(255,255,255,0.08);
+          margin-top: 1.8rem;
+          position: relative;
+          overflow: hidden;
+          border-radius: 2px;
+      }
+      .progress-fill {
+          position: absolute;
+          top: 0; left: 0;
+          height: 100%;
+          width: 50%;
+          background: #ffffff;
+          border-radius: 2px;
+          animation: loadProgress 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      @keyframes shine {
+          to { background-position: 200% center; }
+      }
+      @keyframes scaleUp {
+          from { transform: scale(0.9); opacity: 0; filter: blur(8px); }
+          to { transform: scale(1); opacity: 1; filter: blur(0); }
+      }
+      @keyframes fadeInSub {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes loadProgress {
+          0% { left: -50%; width: 50%; }
+          50% { left: 25%; width: 50%; }
+          100% { left: 100%; width: 50%; }
       }
     </style>
 </div>
@@ -1000,6 +1062,8 @@
   </nav>
   <script>
     window.cartItems = JSON.parse(localStorage.getItem('cenin_cart_items_map')) || {};
+    for (let id in window.cartItems) { if (typeof window.cartItems[id] !== 'number') window.cartItems[id] = 1; }
+    localStorage.setItem('cenin_cart_items_map', JSON.stringify(window.cartItems));
     window.globalDeliveryFee = 0; 
     window.appliedCoupon = JSON.parse(localStorage.getItem('cenin_applied_coupon')) || null;
     window.upiTimerInterval = null;
@@ -1454,15 +1518,15 @@
         window.finalPayableAmount = grandTotal;
         let deliveryText = delivery === 0 ? '<span class="summary-row free" style="margin:0;">Free</span>' : window.formatPrice(delivery);
         // Shipping Methods Options choice
-        let shippingOptionsHTML = '';
+                let shippingOptionsHTML = '';
         const settings = window.deliverySettings || {};
         if (settings.offerExpressDelivery) {
             const standardSLA = settings.sla || "3-5 Business Days";
             const expressSLA = settings.expressSLA || "1-2 Business Days";
             const baseStandardFee = window.calculateActiveStandardFee(settings);
             const standardFeeAmt = (settings.offerFreeThreshold && settings.minOrder && finalItemsTotal >= settings.minOrder) ? 0 : baseStandardFee;
-            const standardFeeTxt = standardFeeAmt === 0 ? 'Free' : `₹${standardFeeAmt}`;
-            const expressFeeTxt = `₹${settings.expressFee || 0}`;
+            const standardFeeTxt = standardFeeAmt === 0 ? 'Free' : '₹' + standardFeeAmt;
+            const expressFeeTxt = '₹' + (settings.expressFee || 0);
             shippingOptionsHTML = `
               <div class="shipping-options" style="display: flex; flex-direction: column; gap: 0.6rem; text-align: left; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 1rem 0; margin: 0.8rem 0;">
                 <span style="font-size: 0.7rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Shipping Method</span>
@@ -1470,14 +1534,14 @@
                   <div onclick="window.selectShippingOption('standard')" style="flex: 1; padding: 0.7rem; border-radius: 8px; border: 1.5px solid ${window.selectedShippingOption !== 'express' ? 'var(--text-main)' : 'var(--border-color)'}; background: ${window.selectedShippingOption !== 'express' ? 'rgba(0,0,0,0.02)' : 'var(--bg-primary)'}; cursor: pointer; transition: all 0.2s; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                       <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption !== 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">Standard</span>
-                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption !== 'express' ? 'var(--accent)' : 'var(--text-muted)'};">${standardFeeTxt}</span>
+                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption !== 'express' ? 'var(--accent)' : 'var(--text-muted)'};">` + standardFeeTxt + `</span>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">${standardSLA}</span>
                   </div>
                   <div onclick="window.selectShippingOption('express')" style="flex: 1; padding: 0.7rem; border-radius: 8px; border: 1.5px solid ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--border-color)'}; background: ${window.selectedShippingOption === 'express' ? 'rgba(0,0,0,0.02)' : 'var(--bg-primary)'}; cursor: pointer; transition: all 0.2s; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                      <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">? Express</span>
-                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption === 'express' ? 'var(--accent)' : 'var(--text-muted)'};">${expressFeeTxt}</span>
+                      <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">⚡ Express</span>
+                      <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption === 'express' ? 'var(--accent)' : 'var(--text-muted)'};">` + expressFeeTxt + `</span>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">${expressSLA}</span>
                   </div>
@@ -2980,7 +3044,7 @@
             const autoplayParam = chosenCampaign.autoplay ? 'autoplay=1&mute=1&' : '';
             mediaContent = `
               <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; background:#000; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
-                <iframe src="https://www.youtube.com/embed/${videoId}?${autoplayParam}playsinline=1&enablejsapi=1&rel=0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <iframe src="https://www.youtube.com/embed/${videoId}₹${autoplayParam}playsinline=1&enablejsapi=1&rel=0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
               </div>
             `;
         } else {
@@ -2992,7 +3056,7 @@
         }
         const buttonHtml = chosenCampaign.buttonText ? `
           <div style="display:flex; justify-content:center; margin-top:4px; width:100%;">
-            <a href="${chosenCampaign.buttonLink || '#'}" target="_blank" style="display:inline-block; width:100%; text-align:center; background:#EAB308; color:#000; border:none; padding:0.75rem 1.5rem; border-radius:10px; font-weight:800; font-size:0.85rem; text-decoration:none; text-transform:uppercase; transition:all 0.2s; box-shadow:0 4px 12px rgba(234,179,8,0.25);">
+            <a href="${chosenCampaign.buttonLink || '#'}" target="_blank" style="display:inline-block; width:100%; text-align:center; background:#EAB308; color:#000; border:none; padding:0.75rem 1.5rem; border-radius:10px; font-weight:800; font-size:0.85rem; text-decoration:none; text-transform:uppercase; transition:all 0.2s; box-shadow:0 4px 12px rgba(234₹79,8,0.25);">
               ${chosenCampaign.buttonText}
             </a>
           </div>
@@ -3001,7 +3065,7 @@
           <div style="background:rgba(255,255,255,0.04); border:1px dashed rgba(255,255,255,0.15); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; margin-top:4px; box-sizing:border-box;">
             <span style="font-size:0.75rem; color:#a1a1aa; font-weight:500; font-family:system-ui, -apple-system, sans-serif;">Use Coupon Code:</span>
             <div style="display:flex; align-items:center; gap:8px;">
-              <code style="background:rgba(234,179,8,0.1); color:#EAB308; font-size:0.85rem; font-weight:700; padding:4px 8px; border-radius:6px; letter-spacing:1px; font-family:monospace;">${chosenCampaign.couponCode}</code>
+              <code style="background:rgba(234₹79,8,0.1); color:#EAB308; font-size:0.85rem; font-weight:700; padding:4px 8px; border-radius:6px; letter-spacing:1px; font-family:monospace;">${chosenCampaign.couponCode}</code>
               <button type="button" onclick="window.copyCampaignCoupon('${chosenCampaign.couponCode}', this)" style="background:#EAB308; border:none; color:#000; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; cursor:pointer; text-transform:uppercase; transition:all 0.2s; font-family:system-ui, -apple-system, sans-serif;">Copy</button>
             </div>
           </div>
@@ -3070,7 +3134,7 @@
             toast.style.color = '#fff';
             toast.style.padding = '12px 24px';
             toast.style.borderRadius = '30px';
-            toast.style.boxShadow = '0 10px 25px rgba(34,197,94,0.3)';
+            toast.style.boxShadow = '0 10px 25px rgba(34₹97,94,0.3)';
             toast.style.fontSize = '0.9rem';
             toast.style.fontWeight = 'bold';
             toast.style.zIndex = '999999';

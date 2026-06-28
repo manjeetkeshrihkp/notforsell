@@ -384,16 +384,78 @@
 </style>
 </head>
 <body>
-<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.4s ease, visibility 0.4s ease;">
-    <h1 style="font-family:'Inter', sans-serif; font-size: 2.5rem; letter-spacing: 4px; font-weight:800; color:var(--text-main); margin-bottom:0.5rem; position:relative; overflow:hidden;">
-        CENIN
-        <span style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(234,179,8,0.5), transparent); animation: shimmer 1.5s infinite; background-size: 200% 100%; -webkit-background-clip: text; color: transparent;">CENIN</span>
-    </h1>
-    <p style="font-size:0.8rem; color:var(--text-muted); letter-spacing: 6px; text-transform:uppercase;">Jewelry</p>
+<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;">
+    <div class="cenin-premium-loader">
+        <div class="brand-text">CENIN</div>
+        <div class="brand-subtext">JEWELRY</div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+    </div>
     <style>
-      @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
+      .cenin-premium-loader {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+      }
+      .brand-text {
+          font-family: 'Inter', sans-serif;
+          font-size: 2.8rem;
+          font-weight: 900;
+          color: #ffffff;
+          letter-spacing: 10px;
+          margin-bottom: 0.2rem;
+          margin-right: -10px; /* offset for exact center due to letter spacing */
+          text-transform: uppercase;
+          background: linear-gradient(to right, #ffffff 20%, #71717a 40%, #71717a 60%, #ffffff 80%);
+          background-size: 200% auto;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shine 2.5s linear infinite, scaleUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .brand-subtext {
+          font-size: 0.7rem;
+          color: #6b7280;
+          letter-spacing: 12px;
+          text-transform: uppercase;
+          font-weight: 400;
+          opacity: 0;
+          animation: fadeInSub 1s ease forwards 0.5s;
+          margin-right: -12px; /* offset for centering */
+      }
+      .progress-line {
+          width: 60px;
+          height: 2px;
+          background: rgba(255,255,255,0.08);
+          margin-top: 1.8rem;
+          position: relative;
+          overflow: hidden;
+          border-radius: 2px;
+      }
+      .progress-fill {
+          position: absolute;
+          top: 0; left: 0;
+          height: 100%;
+          width: 50%;
+          background: #ffffff;
+          border-radius: 2px;
+          animation: loadProgress 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+      @keyframes shine {
+          to { background-position: 200% center; }
+      }
+      @keyframes scaleUp {
+          from { transform: scale(0.9); opacity: 0; filter: blur(8px); }
+          to { transform: scale(1); opacity: 1; filter: blur(0); }
+      }
+      @keyframes fadeInSub {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes loadProgress {
+          0% { left: -50%; width: 50%; }
+          50% { left: 25%; width: 50%; }
+          100% { left: 100%; width: 50%; }
       }
     </style>
 </div>
@@ -1653,7 +1715,7 @@
                    </p>
                    <div style="margin-top:1rem; display:flex; gap:10px;">
                       <button onclick="window.confirmEditDefaultAddress()" style="background:transparent; border:1px solid var(--border-color); padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem; color:var(--text-main); transition:all 0.2s;">Edit</button>
-                      <button onclick="window.confirmDeleteDefaultAddress()" style="background:rgba(220,38,38,0.1); border:1px solid rgba(248,113,113,0.3); color:#dc2626; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem; transition:all 0.2s;">Delete</button>
+                      <button onclick="window.confirmDeleteDefaultAddress()" style="background:rgba(220,38,38,0.1); border:1px solid rgba(248₹13₹13,0.3); color:#dc2626; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem; transition:all 0.2s;">Delete</button>
                    </div>
                 </div>`;
             } catch(e) {}
@@ -1673,7 +1735,7 @@
                </p>
                <div style="margin-top:1rem; display:flex; gap:10px;">
                   <button onclick="window.confirmEditExtraAddress(${index})" style="background:transparent; border:1px solid var(--border-color); padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem; color:var(--text-main); transition:all 0.2s;">Edit</button>
-                  <button onclick="window.confirmDeleteExtraAddress(${index})" style="background:rgba(220,38,38,0.1); border:1px solid rgba(248,113,113,0.3); color:#dc2626; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem; transition:all 0.2s;">Delete</button>
+                  <button onclick="window.confirmDeleteExtraAddress(${index})" style="background:rgba(220,38,38,0.1); border:1px solid rgba(248₹13₹13,0.3); color:#dc2626; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; font-weight:600; font-size:0.8rem; transition:all 0.2s;">Delete</button>
                </div>
             </div>`;
         });
