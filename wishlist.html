@@ -2235,10 +2235,11 @@
             console.error("Error loading user cloud details on auth change:", e);
         }
 
-        // Check if we are just transiting back to the original page
+        // After Google sign-in redirect: navigate back to the page that triggered sign-in
         const redirectOrigin = localStorage.getItem('cenin_auth_redirect_origin');
         let isTransit = false;
         if (redirectOrigin) {
+            localStorage.removeItem('cenin_auth_redirect_origin');
             try {
                 const originUrl = new URL(redirectOrigin);
                 const currentUrl = new URL(window.location.href);
@@ -2248,9 +2249,11 @@
                 if (p2 === "") p2 = "/index.html";
                 if (p1 !== p2) {
                     isTransit = true;
+                    window.location.href = redirectOrigin;
+                    return; // stop further execution while navigating
                 }
             } catch(e) {
-                isTransit = true;
+                // redirectOrigin was malformed, ignore it
             }
         }
 
