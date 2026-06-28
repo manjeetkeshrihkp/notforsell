@@ -1,20 +1,28 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithCredential, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Helper to dynamically set authDomain to prevent third-party cookie blocking in production
-const getAuthDomain = () => {
-  const host = window.location.hostname;
-  if (host === "localhost" || host === "127.0.0.1" || host.startsWith("192.168.") || host.startsWith("10.") || host.startsWith("172.")) {
-    return "ceninasia.firebaseapp.com";
-  }
-  return host;
+// Load Google Identity Services SDK dynamically
+const loadGsiScript = () => {
+  return new Promise((resolve, reject) => {
+    if (window.google?.accounts?.id || window.google?.accounts?.oauth2) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => resolve();
+    script.onerror = (err) => reject(new Error("Failed to load Google Sign-In SDK. Please check your connection."));
+    document.head.appendChild(script);
+  });
 };
 
 // Unified Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
-  authDomain: getAuthDomain(),
+  authDomain: "ceninasia.firebaseapp.com",
   projectId: "ceninasia",
   storageBucket: "ceninasia.firebasestorage.app",
   messagingSenderId: "234745308370",
@@ -376,97 +384,8 @@ export const CeninAuth = {
   init() {
     injectStyles();
 
-    // Check if we have returning redirect auth flow results
-    this.handleRedirectResultCheck();
-
-    // Check if we are returning from the mobile auth bridge redirect
-    this.handleBridgeCallbackCheck();
-
     // Dynamically bind to existing page components
     this.rebindDOM();
-  },
-
-  // Check if we are returning from the same-domain auth bridge
-  async handleBridgeCallbackCheck() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const googleIdToken = urlParams.get('google_id_token');
-    const googleAccessToken = urlParams.get('google_access_token');
-    const googleAuthError = urlParams.get('google_auth_error');
-
-    if (googleIdToken) {
-      // Clear the query params from the URL so it looks clean
-      const cleanUrl = window.location.origin + window.location.pathname + window.location.search
-        .replace(/[\?&]google_id_token=[^&]+/, '')
-        .replace(/[\?&]google_access_token=[^&]+/, '')
-        .replace(/^[\?&]/, '?')
-        .replace(/\?$/, '');
-      window.history.replaceState({}, document.title, cleanUrl);
-
-      // Sign in with the credential
-      this.handleBridgeSignIn(googleIdToken, googleAccessToken);
-    } else if (googleAuthError) {
-      const cleanUrl = window.location.origin + window.location.pathname + window.location.search
-        .replace(/[\?&]google_auth_error=[^&]+/, '')
-        .replace(/^[\?&]/, '?')
-        .replace(/\?$/, '');
-      window.history.replaceState({}, document.title, cleanUrl);
-      
-      console.error("Bridge authentication failed:", googleAuthError);
-      alert("Sign-In Failed: " + googleAuthError);
-    }
-  },
-
-  // Perform sign in using credentials passed from the bridge
-  async handleBridgeSignIn(idToken, accessToken) {
-    // Injects a beautiful full-screen loading blocker
-    const loader = document.createElement('div');
-    loader.id = 'cenin-auth-redirect-loader';
-    loader.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #09090B; z-index: 9999999; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: white;
-    `;
-    loader.innerHTML = `
-      <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #EAB308; border-radius: 50%; animation: spin 1s cubic-bezier(0.16, 1, 0.3, 1) infinite; margin-bottom: 1.5rem;"></div>
-      <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">Authenticating Session</div>
-      <div style="color: #A1A1AA; font-size: 0.85rem;">Completing secure Google verification...</div>
-      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-    `;
-    document.body.appendChild(loader);
-
-    try {
-      const authInstance = getAuthInstance();
-      const credential = GoogleAuthProvider.credential(idToken, accessToken);
-      const result = await signInWithCredential(authInstance, credential);
-      
-      if (result?.user) {
-        window.currentUser = result.user;
-      }
-
-      // Trigger checkout page specific flow if needed
-      if (localStorage.getItem('cenin_checkout_redirect') === 'true') {
-        localStorage.removeItem('cenin_checkout_redirect');
-        
-        // Let the page know we are ready
-        setTimeout(() => {
-          if (typeof window.proceedToCheckoutForm === 'function') {
-            window.proceedToCheckoutForm();
-          }
-          if (window.location.pathname.includes('shop.html')) {
-            const sidebar = document.getElementById('cartSidebar');
-            const overlay = document.getElementById('cartOverlay');
-            if (sidebar) sidebar.classList.add('active');
-            if (overlay) overlay.classList.add('active');
-            if (window.renderCartUI) window.renderCartUI();
-          }
-        }, 600);
-      }
-    } catch (error) {
-      console.error("Bridge Sign-In failed:", error);
-      alert("Verification failed: " + error.message);
-    } finally {
-      if (loader) loader.remove();
-    }
   },
 
   rebindDOM() {
@@ -516,14 +435,6 @@ export const CeninAuth = {
           self.signIn(googleBtn);
         };
       }
-
-      const redirectBtn = document.getElementById('ceninRedirectBtn');
-      if (redirectBtn) {
-        redirectBtn.onclick = (e) => {
-          e.preventDefault();
-          self.signInRedirectFlow();
-        };
-      }
     }
 
     // Override global functions if requested
@@ -548,183 +459,116 @@ export const CeninAuth = {
     }
   },
 
-  // Combined auth handler. Prioritizes popups on Desktop, Redirects on Mobile/Tablet.
+  // Google Identity Services (GSI) Sign-In Flow
   async signIn(btnElement = null) {
     if (window.location.protocol === 'file:') {
       alert("Firebase Authentication requires a local web server (like Live Server or http-server) to run securely.");
       return;
     }
 
-    const authInstance = getAuthInstance();
     this.activeTriggerButton = btnElement || document.getElementById('ceninGoogleBtn');
     const originalContent = this.activeTriggerButton ? this.activeTriggerButton.innerHTML : 'Continue with Google';
 
     if (this.activeTriggerButton) {
-      this.activeTriggerButton.innerHTML = `<span class="cenin-loading-shimmer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50px; font-weight: 700;">Securing Connection...</span>`;
+      this.activeTriggerButton.innerHTML = `<span class="cenin-loading-shimmer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50px; font-weight: 700;">Connecting to Google...</span>`;
       this.activeTriggerButton.disabled = true;
     }
 
-    // Hide any previous popup warning
-    const warningEl = document.getElementById('ceninPopupWarning');
-    if (warningEl) warningEl.classList.remove('active');
-
-    // Detect mobile/tablet device (standard UA check + iPad touch points check)
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                     (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
-
-    if (isMobile) {
-      // Set the flag if logging in during checkout flow
-      if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
-        localStorage.setItem('cenin_checkout_redirect', 'true');
-      }
-      
-      // Redirect to the same-domain auth bridge on Firebase Hosting
-      const bridgeUrl = `https://ceninasia.firebaseapp.com/auth-bridge.html?redirect=${encodeURIComponent(window.location.href)}`;
-      window.location.href = bridgeUrl;
-      return;
-    }
-
     try {
-      // Set the flag if logging in during checkout flow
-      if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
-        localStorage.setItem('cenin_checkout_redirect', 'true');
-      }
+      // Load Google Identity Services SDK dynamically
+      await loadGsiScript();
 
-      // Try popup sign in first (highly successful across desktop when user-initiated)
-      const result = await signInWithPopup(authInstance, provider);
-      window.currentUser = result.user;
-      
-      // Clear checkout flag and redirect tags if popup succeeds
-      localStorage.removeItem('cenin_checkout_redirect');
-
-      if (window.currentUser) {
-        this.closeModal();
-        
-        // Trigger checkout page specific flow
-        if (typeof window.proceedToCheckoutForm === 'function') {
-          window.proceedToCheckoutForm();
-        }
-        // Reload or update components if needed
-        if (window.location.pathname.includes('creator.html') && typeof window.openModal === 'function') {
-          window.openModal();
-        }
-      }
-    } catch (error) {
-      console.error("Popup Authentication failed:", error);
-      
-      // Check if popup was blocked
-      if (
-        error.code === "auth/popup-blocked" || 
-        error.code === "auth/popup-closed-by-user" || 
-        error.code === "auth/cancelled-popup-request" || 
-        error.code === "auth/operation-not-supported-in-this-environment" || 
-        error.code === "auth/web-storage-unsupported"
-      ) {
-        // Render step-by-step redirect fallback UI inside the card (no ugly browser alert!)
-        if (warningEl) {
-          warningEl.classList.add('active');
-        } else {
-          // If no fallback container, proceed directly to redirect
-          this.signInRedirectFlow();
-        }
-      } else {
-        alert("Google Sign-In Error: " + error.message);
-      }
-    } finally {
-      if (this.activeTriggerButton) {
-        this.activeTriggerButton.innerHTML = originalContent;
-        this.activeTriggerButton.disabled = false;
-      }
-    }
-  },
-
-  // Fallback Redirect Flow
-  async signInRedirectFlow() {
-    storeAuthRedirectOrigin();
-    const btn = document.getElementById('ceninRedirectBtn') || this.activeTriggerButton;
-    if (btn) {
-      btn.innerHTML = "Opening Google...";
-      btn.disabled = true;
-    }
-
-    try {
       const authInstance = getAuthInstance();
-      await signInWithRedirect(authInstance, provider);
-    } catch (error) {
-      console.error("Redirect trigger failed:", error);
-      localStorage.removeItem('cenin_auth_redirect_origin');
-      localStorage.removeItem('cenin_checkout_redirect');
-      alert("Redirect Sign-in Failed: " + error.message);
-      if (btn) {
-        btn.innerHTML = "Continue via Redirect";
-        btn.disabled = false;
+
+      // Set the flag if logging in during checkout flow
+      if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
+        localStorage.setItem('cenin_checkout_redirect', 'true');
       }
+
+      // Initialize the Google OAuth2 token client
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: '234745308370-r4r8tn6scafgd1dkljk4mnip248mde2s.apps.googleusercontent.com',
+        scope: 'email profile openid',
+        callback: async (response) => {
+          if (response.error) {
+            console.error("Google Sign-In failed:", response.error);
+            alert("Google Sign-In Failed: " + (response.error_description || response.error));
+            this.resetSignInButton(originalContent);
+            return;
+          }
+
+          // Injects a beautiful full-screen loading blocker while Firebase authenticates
+          const loader = document.createElement('div');
+          loader.id = 'cenin-auth-redirect-loader';
+          loader.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #09090B; z-index: 9999999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: white;
+          `;
+          loader.innerHTML = `
+            <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #EAB308; border-radius: 50%; animation: spin 1s cubic-bezier(0.16, 1, 0.3, 1) infinite; margin-bottom: 1.5rem;"></div>
+            <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">Authenticating Session</div>
+            <div style="color: #A1A1AA; font-size: 0.85rem;">Completing secure Google verification...</div>
+            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+          `;
+          document.body.appendChild(loader);
+
+          try {
+            // Sign in to Firebase using the Google Access Token
+            const credential = GoogleAuthProvider.credential(null, response.access_token);
+            const result = await signInWithCredential(authInstance, credential);
+            
+            if (result?.user) {
+              window.currentUser = result.user;
+              this.closeModal();
+              
+              // Trigger checkout page specific flow
+              if (localStorage.getItem('cenin_checkout_redirect') === 'true') {
+                localStorage.removeItem('cenin_checkout_redirect');
+                setTimeout(() => {
+                  if (typeof window.proceedToCheckoutForm === 'function') {
+                    window.proceedToCheckoutForm();
+                  }
+                  if (window.location.pathname.includes('shop.html')) {
+                    const sidebar = document.getElementById('cartSidebar');
+                    const overlay = document.getElementById('cartOverlay');
+                    if (sidebar) sidebar.classList.add('active');
+                    if (overlay) overlay.classList.add('active');
+                    if (window.renderCartUI) window.renderCartUI();
+                  }
+                }, 600);
+              }
+
+              // Reload or update components if needed
+              if (window.location.pathname.includes('creator.html') && typeof window.openModal === 'function') {
+                window.openModal();
+              }
+            }
+          } catch (error) {
+            console.error("Firebase authentication failed:", error);
+            alert("Verification failed: " + error.message);
+          } finally {
+            localStorage.removeItem('cenin_checkout_redirect');
+            if (loader) loader.remove();
+            this.resetSignInButton(originalContent);
+          }
+        }
+      });
+
+      // Request the access token (opens the Google Sign-In prompt)
+      client.requestAccessToken({ prompt: 'select_account' });
+
+    } catch (error) {
+      console.error("Failed to initialize Google Sign-In:", error);
+      alert("Failed to load Google Sign-In. Please check your connection.");
+      this.resetSignInButton(originalContent);
     }
   },
 
-  // Handlers for redirect page callbacks on startup
-  async handleRedirectResultCheck() {
-    const redirectOrigin = localStorage.getItem('cenin_auth_redirect_origin');
-    
-    // Check if returning from a redirect Auth flow
-    if (redirectOrigin) {
-      // Injects a beautiful full-screen loading blocker
-      const loader = document.createElement('div');
-      loader.id = 'cenin-auth-redirect-loader';
-      loader.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: #09090B; z-index: 9999999; display: flex; flex-direction: column;
-        align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: white;
-      `;
-      loader.innerHTML = `
-        <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #EAB308; border-radius: 50%; animation: spin 1s cubic-bezier(0.16, 1, 0.3, 1) infinite; margin-bottom: 1.5rem;"></div>
-        <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">Authenticating Session</div>
-        <div style="color: #A1A1AA; font-size: 0.85rem;">Completing secure Google verification...</div>
-        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-      `;
-      document.body.appendChild(loader);
-
-      try {
-        const authInstance = getAuthInstance();
-        
-        // Timeout after 5 seconds to prevent hanging the UI on mobile browsers
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Timeout: Google didn't respond in time. This can happen if cross-site tracking is prevented or third-party cookies are blocked.")), 5000)
-        );
-        
-        const result = await Promise.race([
-          getRedirectResult(authInstance),
-          timeoutPromise
-        ]);
-
-        if (result?.user) {
-          window.currentUser = result.user;
-        }
-        
-        // Handle post-redirect route navigation
-        const cleanOrigin = redirectOrigin.split('#')[0];
-        localStorage.removeItem('cenin_auth_redirect_origin');
-        
-        if (window.currentUser && cleanOrigin !== window.location.href.split('#')[0]) {
-          window.location.replace(cleanOrigin);
-        }
-      } catch (error) {
-        console.error("Redirect session retrieval failed or timed out:", error);
-        localStorage.removeItem('cenin_auth_redirect_origin');
-        localStorage.removeItem('cenin_checkout_redirect');
-        
-        let friendlyMessage = error.message;
-        if (error.code === 'auth/unauthorized-domain') {
-          friendlyMessage = `This domain (${window.location.hostname}) is not authorized in your Firebase Console.\n\nPlease go to Firebase Console > Authentication > Settings > Authorized domains and add "${window.location.hostname}".`;
-        } else if (error.code === 'auth/web-storage-unsupported') {
-          friendlyMessage = "Web storage is unsupported or blocked by your browser's privacy settings (e.g. third-party cookies are disabled). Please enable cookies or try a different browser.";
-        }
-        
-        alert("Verification failed: " + friendlyMessage);
-      } finally {
-        const loaderEl = document.getElementById('cenin-auth-redirect-loader');
-        if (loaderEl) loaderEl.remove();
-      }
+  resetSignInButton(originalContent) {
+    if (this.activeTriggerButton) {
+      this.activeTriggerButton.innerHTML = originalContent;
+      this.activeTriggerButton.disabled = false;
     }
   }
 };
