@@ -1361,6 +1361,7 @@
         if (window.currentUser) {
             window.proceedToCheckoutForm();
         } else {
+            localStorage.setItem('cenin_checkout_redirect', 'true');
             const authModal = document.getElementById('authModal');
             if (authModal) authModal.classList.add('active');
         }
