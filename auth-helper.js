@@ -1,23 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithCredential, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, signInWithPopup, signInWithCredential, GoogleAuthProvider, browserLocalPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-// Load Google Identity Services SDK dynamically
-const loadGsiScript = () => {
-  return new Promise((resolve, reject) => {
-    if (window.google?.accounts?.id || window.google?.accounts?.oauth2) {
-      resolve();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => resolve();
-    script.onerror = (err) => reject(new Error("Failed to load Google Sign-In SDK. Please check your connection."));
-    document.head.appendChild(script);
-  });
-};
 
 // Unified Firebase Configuration
 const firebaseConfig = {
@@ -384,8 +367,110 @@ export const CeninAuth = {
   init() {
     injectStyles();
 
+    // Check if we are returning from the mobile auth bridge redirect
+    this.handleBridgeCallbackCheck();
+
     // Dynamically bind to existing page components
     this.rebindDOM();
+  },
+
+  // Check if we are returning from the same-domain auth bridge
+  async handleBridgeCallbackCheck() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleIdToken = urlParams.get('google_id_token');
+    const googleAccessToken = urlParams.get('google_access_token');
+    const googleAuthError = urlParams.get('google_auth_error');
+
+    if (googleIdToken) {
+      // Remove only the auth-related params, preserve any other query params cleanly
+      urlParams.delete('google_id_token');
+      urlParams.delete('google_access_token');
+      const remaining = urlParams.toString();
+      const cleanUrl = window.location.origin + window.location.pathname +
+        (remaining ? '?' + remaining : '');
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      // Sign in with the credential
+      this.handleBridgeSignIn(googleIdToken, googleAccessToken || null);
+    } else if (googleAuthError) {
+      urlParams.delete('google_auth_error');
+      const remaining = urlParams.toString();
+      const cleanUrl = window.location.origin + window.location.pathname +
+        (remaining ? '?' + remaining : '');
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      console.error("Bridge authentication failed:", decodeURIComponent(googleAuthError));
+      alert("Sign-In Failed: " + decodeURIComponent(googleAuthError));
+    }
+  },
+
+  // Perform sign in using credentials passed from the bridge
+  async handleBridgeSignIn(idToken, accessToken) {
+    if (!idToken) {
+      console.error("handleBridgeSignIn: no idToken provided");
+      alert("Sign-In Failed: Missing authentication token. Please try again.");
+      return;
+    }
+
+    // Injects a beautiful full-screen loading blocker
+    const loader = document.createElement('div');
+    loader.id = 'cenin-auth-redirect-loader';
+    loader.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #09090B; z-index: 9999999; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: white;
+    `;
+    loader.innerHTML = `
+      <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #EAB308; border-radius: 50%; animation: spin 1s cubic-bezier(0.16, 1, 0.3, 1) infinite; margin-bottom: 1.5rem;"></div>
+      <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">Authenticating Session</div>
+      <div style="color: #A1A1AA; font-size: 0.85rem;">Completing secure Google verification...</div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    `;
+    document.body.appendChild(loader);
+
+    try {
+      const authInstance = getAuthInstance();
+
+      // GoogleAuthProvider.credential(idToken, accessToken) — accessToken is optional (can be null)
+      const credential = GoogleAuthProvider.credential(idToken, accessToken);
+      const result = await signInWithCredential(authInstance, credential);
+
+      if (result?.user) {
+        window.currentUser = result.user;
+        this.closeModal();
+      }
+
+      // Trigger checkout page specific flow if needed
+      if (localStorage.getItem('cenin_checkout_redirect') === 'true') {
+        localStorage.removeItem('cenin_checkout_redirect');
+
+        // Let the page know we are ready
+        setTimeout(() => {
+          if (typeof window.proceedToCheckoutForm === 'function') {
+            window.proceedToCheckoutForm();
+          }
+          if (window.location.pathname.includes('shop.html')) {
+            const sidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            if (sidebar) sidebar.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            if (window.renderCartUI) window.renderCartUI();
+          }
+        }, 600);
+      }
+    } catch (error) {
+      console.error("Bridge Sign-In failed:", error);
+
+      // Firebase auth/invalid-credential means the ID token has expired (>1 hour).
+      // This is rare but can happen on very slow connections. Retry via bridge.
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/argument-error') {
+        alert("Session token expired. Please sign in again.");
+      } else {
+        alert("Verification failed: " + error.message);
+      }
+    } finally {
+      if (loader) loader.remove();
+    }
   },
 
   rebindDOM() {
@@ -459,116 +544,79 @@ export const CeninAuth = {
     }
   },
 
-  // Google Identity Services (GSI) Sign-In Flow
+  // Combined auth handler. Prioritizes popups on Desktop, Redirects via Bridge on Mobile.
   async signIn(btnElement = null) {
     if (window.location.protocol === 'file:') {
       alert("Firebase Authentication requires a local web server (like Live Server or http-server) to run securely.");
       return;
     }
 
+    const authInstance = getAuthInstance();
     this.activeTriggerButton = btnElement || document.getElementById('ceninGoogleBtn');
     const originalContent = this.activeTriggerButton ? this.activeTriggerButton.innerHTML : 'Continue with Google';
 
     if (this.activeTriggerButton) {
-      this.activeTriggerButton.innerHTML = `<span class="cenin-loading-shimmer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50px; font-weight: 700;">Connecting to Google...</span>`;
+      this.activeTriggerButton.innerHTML = `<span class="cenin-loading-shimmer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50px; font-weight: 700;">Securing Connection...</span>`;
       this.activeTriggerButton.disabled = true;
     }
 
+    // Detect mobile/tablet device (standard UA check + iPad touch points check)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                     (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
+
+    if (isMobile) {
+      // Set the flag BEFORE navigating away so it is never lost
+      if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
+        localStorage.setItem('cenin_checkout_redirect', 'true');
+      }
+
+      // Build the current page URL without any stale auth params
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete('google_id_token');
+      currentUrl.searchParams.delete('google_access_token');
+      currentUrl.searchParams.delete('google_auth_error');
+
+      // Redirect to the same-domain auth bridge on Firebase Hosting
+      const bridgeUrl = `https://ceninasia.firebaseapp.com/auth-bridge.html?redirect=${encodeURIComponent(currentUrl.toString())}`;
+      window.location.href = bridgeUrl;
+      return;
+    }
+
     try {
-      // Load Google Identity Services SDK dynamically
-      await loadGsiScript();
-
-      const authInstance = getAuthInstance();
-
       // Set the flag if logging in during checkout flow
       if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
         localStorage.setItem('cenin_checkout_redirect', 'true');
       }
 
-      // Initialize the Google OAuth2 token client
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: '234745308370-r4r8tn6scafgd1dkljk4mnip248mde2s.apps.googleusercontent.com',
-        scope: 'email profile openid',
-        callback: async (response) => {
-          if (response.error) {
-            console.error("Google Sign-In failed:", response.error);
-            alert("Google Sign-In Failed: " + (response.error_description || response.error));
-            this.resetSignInButton(originalContent);
-            return;
-          }
+      // Try popup sign in (highly successful across desktop, doesn't throw origin_mismatch)
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(authInstance, provider);
+      window.currentUser = result.user;
+      
+      // Clear checkout flag if popup succeeds
+      localStorage.removeItem('cenin_checkout_redirect');
 
-          // Injects a beautiful full-screen loading blocker while Firebase authenticates
-          const loader = document.createElement('div');
-          loader.id = 'cenin-auth-redirect-loader';
-          loader.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #09090B; z-index: 9999999; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; font-family: 'Inter', sans-serif; color: white;
-          `;
-          loader.innerHTML = `
-            <div style="width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #EAB308; border-radius: 50%; animation: spin 1s cubic-bezier(0.16, 1, 0.3, 1) infinite; margin-bottom: 1.5rem;"></div>
-            <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem;">Authenticating Session</div>
-            <div style="color: #A1A1AA; font-size: 0.85rem;">Completing secure Google verification...</div>
-            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-          `;
-          document.body.appendChild(loader);
-
-          try {
-            // Sign in to Firebase using the Google Access Token
-            const credential = GoogleAuthProvider.credential(null, response.access_token);
-            const result = await signInWithCredential(authInstance, credential);
-            
-            if (result?.user) {
-              window.currentUser = result.user;
-              this.closeModal();
-              
-              // Trigger checkout page specific flow
-              if (localStorage.getItem('cenin_checkout_redirect') === 'true') {
-                localStorage.removeItem('cenin_checkout_redirect');
-                setTimeout(() => {
-                  if (typeof window.proceedToCheckoutForm === 'function') {
-                    window.proceedToCheckoutForm();
-                  }
-                  if (window.location.pathname.includes('shop.html')) {
-                    const sidebar = document.getElementById('cartSidebar');
-                    const overlay = document.getElementById('cartOverlay');
-                    if (sidebar) sidebar.classList.add('active');
-                    if (overlay) overlay.classList.add('active');
-                    if (window.renderCartUI) window.renderCartUI();
-                  }
-                }, 600);
-              }
-
-              // Reload or update components if needed
-              if (window.location.pathname.includes('creator.html') && typeof window.openModal === 'function') {
-                window.openModal();
-              }
-            }
-          } catch (error) {
-            console.error("Firebase authentication failed:", error);
-            alert("Verification failed: " + error.message);
-          } finally {
-            localStorage.removeItem('cenin_checkout_redirect');
-            if (loader) loader.remove();
-            this.resetSignInButton(originalContent);
-          }
+      if (window.currentUser) {
+        this.closeModal();
+        
+        // Trigger checkout page specific flow
+        if (typeof window.proceedToCheckoutForm === 'function') {
+          window.proceedToCheckoutForm();
         }
-      });
-
-      // Request the access token (opens the Google Sign-In prompt)
-      client.requestAccessToken({ prompt: 'select_account' });
-
+        // Reload or update components if needed
+        if (window.location.pathname.includes('creator.html') && typeof window.openModal === 'function') {
+          window.openModal();
+        }
+      }
     } catch (error) {
-      console.error("Failed to initialize Google Sign-In:", error);
-      alert("Failed to load Google Sign-In. Please check your connection.");
-      this.resetSignInButton(originalContent);
-    }
-  },
-
-  resetSignInButton(originalContent) {
-    if (this.activeTriggerButton) {
-      this.activeTriggerButton.innerHTML = originalContent;
-      this.activeTriggerButton.disabled = false;
+      console.error("Popup Authentication failed:", error);
+      alert("Google Sign-In Error: " + error.message);
+    } finally {
+      if (this.activeTriggerButton) {
+        this.activeTriggerButton.innerHTML = originalContent;
+        this.activeTriggerButton.disabled = false;
+      }
     }
   }
 };
