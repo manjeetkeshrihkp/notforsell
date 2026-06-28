@@ -23,7 +23,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-primary); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; opacity: 0; animation: pageFadeIn 0.3s ease-out forwards; }
-    body.fade-out { animation: pageFadeOut 0.2s ease-in forwards; }
+    body.fade-out { animation: pageFadeOut 0.1s ease-in forwards; }
     @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pageFadeOut { from { opacity: 1; } to { opacity: 0; } }
 
@@ -353,9 +353,105 @@
     .wishlist-btn-cancel:hover { background: var(--bg-secondary); }
     .close-wishlist-modal-btn { position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
     .close-wishlist-modal-btn:hover { color: var(--text-main); }
-  </style>
+      
+    }
+    /* Premium Loader */
+    .global-loader {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: var(--bg-primary, #121212);
+        z-index: 999999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .global-loader.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+    .loader-content {
+        text-align: center;
+    }
+    .loader-emoji {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+        animation: floatSpin 3s ease-in-out infinite;
+        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+    }
+    .loader-logo {
+        font-family: 'Inter', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #fff, #aaa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: premiumPulse 1.5s ease-in-out infinite alternate;
+        margin-bottom: 1rem;
+    }
+    .loader-logo span {
+        font-weight: 300;
+    }
+    .loader-line {
+        width: 60px;
+        height: 3px;
+        background: var(--text-main, #fff);
+        margin: 0 auto;
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+    }
+    .loader-line::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0,0,0,0.5), transparent);
+        animation: shimmerLine 1s infinite;
+    }
+    @keyframes premiumPulse {
+        0% { opacity: 0.6; transform: scale(0.98); filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+        100% { opacity: 1; transform: scale(1.02); filter: drop-shadow(0 0 15px rgba(255,255,255,0.6)); }
+    }
+    @keyframes shimmerLine {
+        100% { left: 100%; }
+    }
+    @keyframes floatSpin {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(15deg) scale(1.1); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+</style>
 </head>
 <body>
+<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-primary); z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <h1 style="font-family:'Inter', sans-serif; font-size: 2.5rem; letter-spacing: 4px; font-weight:800; color:var(--text-main); margin-bottom:0.5rem; position:relative; overflow:hidden;">
+        CENIN
+        <span style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(234,179,8,0.5), transparent); animation: shimmer 1.5s infinite; background-size: 200% 100%; -webkit-background-clip: text; color: transparent;">CENIN</span>
+    </h1>
+    <p style="font-size:0.8rem; color:var(--text-muted); letter-spacing: 6px; text-transform:uppercase;">Jewelry</p>
+    <style>
+      @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+      }
+    </style>
+</div>
+<script>
+  window.removeGlobalLoader = function() {
+      const loader = document.getElementById('cenin-global-loader');
+      if (loader) {
+          loader.style.opacity = '0';
+          loader.style.visibility = 'hidden';
+          setTimeout(() => loader.remove(), 400);
+      }
+  };
+</script>
+
+
 
   <!-- =========================================
        MAIN WISHLIST VIEW
@@ -2094,9 +2190,6 @@
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
                 <span style="font-size:2rem;">⏳</span>
-                <h3 style="font-size:1.05rem; font-weight:800; color:#EAB308; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Under Review</h3>
-                <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Our team will contact you within a short time. We are currently verifying your details and appeal reason.</p>
-              </div>
             `;
         } else if (appealStatus === "rejected") {
             appealContent = `
@@ -2746,6 +2839,8 @@
       } catch (error) {
         console.error("Firebase fetch error: ", error);
         document.getElementById('wishlistGrid').innerHTML = `<p style="grid-column:1/-1; text-align:center; color:red;">Failed to load wishlist. Please check your connection.</p>`;
+      } finally {
+        if(window.removeGlobalLoader) window.removeGlobalLoader();
       }
     }
 
@@ -3073,16 +3168,14 @@
     fetchStoreProducts();
   </script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', (e) => {
             const href = link.getAttribute('href');
             if (href && !href.startsWith('#') && href !== window.location.pathname.split('/').pop()) {
                 e.preventDefault();
                 document.body.classList.add('fade-out');
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 200);
+                window.location.href = href;;
             }
         });
     });

@@ -22,7 +22,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-primary); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; opacity: 0; animation: pageFadeIn 0.3s ease-out forwards; }
-    body.fade-out { animation: pageFadeOut 0.2s ease-in forwards; }
+    body.fade-out { animation: pageFadeOut 0.1s ease-in forwards; }
     @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pageFadeOut { from { opacity: 1; } to { opacity: 0; } }
 
@@ -470,9 +470,98 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
 
-  </style>
+      
+    }
+    
+        50% { transform: translateY(-15px) rotate(15deg) scale(1.1); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+    /* Premium Loader */
+    .global-loader {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: var(--bg-primary, #121212);
+        z-index: 999999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .global-loader.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+    .loader-content {
+        text-align: center;
+    }
+    .loader-logo {
+        font-family: 'Inter', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #fff, #aaa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: premiumPulse 1.5s ease-in-out infinite alternate;
+        margin-bottom: 1rem;
+    }
+    .loader-logo span {
+        font-weight: 300;
+    }
+    .loader-line {
+        width: 60px;
+        height: 3px;
+        background: var(--text-main, #fff);
+        margin: 0 auto;
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+    }
+    .loader-line::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0,0,0,0.5), transparent);
+        animation: shimmerLine 1s infinite;
+    }
+    @keyframes premiumPulse {
+        0% { opacity: 0.6; transform: scale(0.98); filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+        100% { opacity: 1; transform: scale(1.02); filter: drop-shadow(0 0 15px rgba(255,255,255,0.6)); }
+    }
+    @keyframes shimmerLine {
+        100% { left: 100%; }
+    }
+</style>
 </head>
 <body>
+<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-primary); z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <h1 style="font-family:'Inter', sans-serif; font-size: 2.5rem; letter-spacing: 4px; font-weight:800; color:var(--text-main); margin-bottom:0.5rem; position:relative; overflow:hidden;">
+        CENIN
+        <span style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(234,179,8,0.5), transparent); animation: shimmer 1.5s infinite; background-size: 200% 100%; -webkit-background-clip: text; color: transparent;">CENIN</span>
+    </h1>
+    <p style="font-size:0.8rem; color:var(--text-muted); letter-spacing: 6px; text-transform:uppercase;">Jewelry</p>
+    <style>
+      @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+      }
+    </style>
+</div>
+<script>
+  window.removeGlobalLoader = function() {
+      const loader = document.getElementById('cenin-global-loader');
+      if (loader) {
+          loader.style.opacity = '0';
+          loader.style.visibility = 'hidden';
+          setTimeout(() => loader.remove(), 400);
+      }
+  };
+</script>
+
+
+
 
   <div id="mainStorefrontView">
     
@@ -544,7 +633,7 @@
       <span>Earrings</span>
     </div>
     <div class="category-item" onclick="window.goToShopWithTag('pendants')">
-      <div class="category-image-box"><img src="https://assets0.mirraw.com/images/12203979/image_zoom.jpeg?1709025756" alt="Pendants"></div>
+      <div class="category-image-box"><img src="https://assets0.mirraw.com/images/12203979/image_zoom.jpeg₹1709025756" alt="Pendants"></div>
       <span>Pendants</span>
     </div>
     <div class="category-item" onclick="window.goToShopWithTag('watches')">
@@ -729,9 +818,13 @@
         <button class="share-btn fp-share-btn" id="fpShareBtn" aria-label="Share">
           <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
         </button>
-        <button class="fp-nav-btn fp-prev" id="fpPrevBtn" onclick="window.slideFPMedia(-1)">❮</button>
+        <button class="fp-nav-btn fp-prev" id="fpPrevBtn" onclick="window.slideFPMedia(-1)">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
         <div class="fp-media-slider" id="fpMediaSlider"></div>
-        <button class="fp-nav-btn fp-next" id="fpNextBtn" onclick="window.slideFPMedia(1)">❯</button>
+        <button class="fp-nav-btn fp-next" id="fpNextBtn" onclick="window.slideFPMedia(1)">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
 
       <div class="fp-details">
@@ -1574,7 +1667,7 @@
                   </div>
                   <div onclick="window.selectShippingOption('express')" style="flex: 1; padding: 0.7rem; border-radius: 8px; border: 1.5px solid ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--border-color)'}; background: ${window.selectedShippingOption === 'express' ? 'rgba(0,0,0,0.02)' : 'var(--bg-primary)'}; cursor: pointer; transition: all 0.2s; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                      <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">⚡ Express</span>
+                      <span style="font-size: 0.75rem; font-weight: 700; color: ${window.selectedShippingOption === 'express' ? 'var(--text-main)' : 'var(--text-muted)'};">? Express</span>
                       <span style="font-size: 0.75rem; font-weight: 800; color: ${window.selectedShippingOption === 'express' ? 'var(--accent)' : 'var(--text-muted)'};">${expressFeeTxt}</span>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 500;">${expressSLA}</span>
@@ -1885,16 +1978,16 @@
                 <div>
                   <label style="font-size:0.7rem; font-weight:600; text-transform:uppercase; color:#a1a1aa; display:block; margin-bottom:4px;">Why should your account be reinstated?</label>
                   <textarea id="appealReason" placeholder="Explain your case..." style="width:100%; padding:0.75rem; background:#09090b; border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff; outline:none; resize:vertical; min-height:80px; font-family:inherit; font-size:0.85rem;" required></textarea>
+                  </div>
+                  <button id="submitAppealBtn" style="background:#EAB308; color:#000; border:none; padding:0.8rem; border-radius:6px; font-weight:800; font-size:0.9rem; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; margin-top:0.5rem; transition:all 0.2s; font-family:inherit;">
+                    Submit Appeal
+                  </button>
                 </div>
-                <button id="submitAppealBtn" style="background:#EAB308; color:#000; border:none; padding:0.8rem; border-radius:6px; font-weight:800; font-size:0.9rem; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; margin-top:0.5rem; transition:all 0.2s; font-family:inherit;">
-                  Submit Appeal
-                </button>
-              </div>
-            `;
+              `;
         } else if (appealStatus === "pending") {
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">⏳</span>
+                <span style="font-size:2rem;">&#8987;</span>
                 <h3 style="font-size:1.05rem; font-weight:800; color:#EAB308; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Under Review</h3>
                 <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Our team will contact you within a short time. We are currently verifying your details and appeal reason.</p>
               </div>
@@ -1902,7 +1995,7 @@
         } else if (appealStatus === "rejected") {
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">❌</span>
+                <span style="font-size:2rem;">&#10060;</span>
                 <h3 style="font-size:1.05rem; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Rejected</h3>
                 <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Your appeal has been reviewed and rejected. This suspension is permanent and cannot be appealed again.</p>
               </div>
@@ -1910,8 +2003,7 @@
         } else if (appealStatus === "approved") {
             appealContent = `
               <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">✅</span>
-                <h3 style="font-size:1.05rem; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Approved</h3>
+                <span style="font-size:2rem;">&#9989;</span><h3 style="font-size:1.05rem; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Approved</h3>
                 <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Good news! Your appeal has been approved. Access to your account is restored.</p>
                 <button onclick="window.location.reload()" style="background:#4ade80; color:#000; border:none; padding:0.7rem 1.2rem; border-radius:6px; font-weight:800; font-size:0.85rem; cursor:pointer; text-transform:uppercase; margin-top:0.5rem; font-family:inherit;">
                   Reload Page
@@ -3088,6 +3180,7 @@
          window.currentBottomRenderCount = 0;
          window.renderBottomProducts(window.INITIAL_LOAD_COUNT || 20);
       }
+      if(window.removeGlobalLoader) window.removeGlobalLoader();
     };
 
     async function fetchStoreProducts() {
@@ -3386,7 +3479,7 @@
         const popupHtml = `
           <div id="campaignPopupOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:99999; display:flex; justify-content:center; align-items:center; opacity:0; transition:opacity 0.4s ease; box-sizing:border-box;">
             <div style="position:relative; width:90%; max-width:600px; background:rgba(20,20,20,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:1.8rem; box-shadow:0 25px 60px rgba(0,0,0,0.8); transform:scale(0.85); transition:transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing:border-box; display:flex; flex-direction:column; gap:12px;">
-              <button type="button" id="campaignCloseBtn" onclick="window.closeCampaignPopup()" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; width:32px; height:32px; border-radius:50%; display:${showCloseBtn ? 'flex' : 'none'}; justify-content:center; align-items:center; cursor:pointer; font-weight:bold; font-size:14px; transition:all 0.2s; z-index:10;">✕</button>
+              <button type="button" id="campaignCloseBtn" onclick="window.closeCampaignPopup()" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; width:32px; height:32px; border-radius:50%; display:${showCloseBtn ? 'flex' : 'none'}; justify-content:center; align-items:center; cursor:pointer; font-weight:bold; font-size:14px; transition:all 0.2s; z-index:10;">&times;</button>
               ${skipTimerHtml}
               ${headingHtml}
               <div style="width:100%;">
@@ -3492,16 +3585,14 @@
     fetchStoreProducts();
   </script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', (e) => {
             const href = link.getAttribute('href');
             if (href && !href.startsWith('#') && href !== window.location.pathname.split('/').pop()) {
                 e.preventDefault();
                 document.body.classList.add('fade-out');
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 200);
+                window.location.href = href;;
             }
         });
     });
