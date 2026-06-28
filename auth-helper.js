@@ -453,7 +453,7 @@ export const CeninAuth = {
     }
   },
 
-  // Combined auth handler. Prioritizes popups across both Desktop & Mobile.
+  // Combined auth handler. Prioritizes popups on Desktop, Redirects on Mobile/Tablet.
   async signIn(btnElement = null) {
     if (window.location.protocol === 'file:') {
       alert("Firebase Authentication requires a local web server (like Live Server or http-server) to run securely.");
@@ -473,13 +473,26 @@ export const CeninAuth = {
     const warningEl = document.getElementById('ceninPopupWarning');
     if (warningEl) warningEl.classList.remove('active');
 
+    // Detect mobile/tablet device (standard UA check + iPad touch points check)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                     (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
+
+    if (isMobile) {
+      // Set the flag if logging in during checkout flow
+      if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
+        localStorage.setItem('cenin_checkout_redirect', 'true');
+      }
+      await this.signInRedirectFlow();
+      return;
+    }
+
     try {
       // Set the flag if logging in during checkout flow
       if (window.location.pathname.includes('shop.html') || window.location.pathname.includes('index.html')) {
         localStorage.setItem('cenin_checkout_redirect', 'true');
       }
 
-      // Try popup sign in first (highly successful across mobile & desktop when user-initiated)
+      // Try popup sign in first (highly successful across desktop when user-initiated)
       const result = await signInWithPopup(authInstance, provider);
       window.currentUser = result.user;
       
