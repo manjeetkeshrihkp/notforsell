@@ -81,7 +81,7 @@
         <div class="spinner" id="spinner"></div>
         <div class="status-title" id="statusTitle">Authenticating</div>
         <p class="status-text" id="statusText">Securely connecting to Google...</p>
-        <button class="fallback-btn" id="fallbackBtn" onclick="manualSignIn()">Continue to Google</button>
+        <button class="fallback-btn" id="fallbackBtn" onclick="manualSignIn()">Sign in with Google</button>
     </div>
 
     <script type="module">
@@ -108,8 +108,13 @@
         const fallbackBtn = document.getElementById('fallbackBtn');
 
         let isHandling = false;
-
+        
         window.manualSignIn = function() {
+            sessionStorage.setItem('cenin_is_redirecting', 'true');
+            spinner.style.display = 'block';
+            fallbackBtn.style.display = 'none';
+            statusTitle.innerText = "Connecting...";
+            statusText.innerText = "Redirecting to Google.";
             signInWithRedirect(auth, provider);
         };
 
@@ -118,6 +123,7 @@
                 // Wait for any pending redirect result
                 const result = await getRedirectResult(auth);
                 if (result && result.user) {
+                    sessionStorage.removeItem('cenin_is_redirecting');
                     isHandling = true;
                     statusTitle.innerText = "Success!";
                     statusText.innerText = "Redirecting you back to the app...";
@@ -127,11 +133,11 @@
                 }
             } catch (error) {
                 console.error("Auth Error:", error);
+                sessionStorage.removeItem('cenin_is_redirecting');
                 isHandling = true;
                 spinner.style.display = 'none';
                 statusTitle.innerText = "Authentication Failed";
                 statusText.innerText = error.message;
-                fallbackBtn.innerText = "Try Again";
                 fallbackBtn.style.display = 'block';
                 return;
             }
@@ -143,21 +149,34 @@
 
                 if (user) {
                     // Already logged in!
+                    sessionStorage.removeItem('cenin_is_redirecting');
                     statusTitle.innerText = "Authenticated!";
                     statusText.innerText = "Redirecting you back...";
                     const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
                     setTimeout(() => { window.location.href = returnUrl; }, 500);
                 } else {
-                    // Not logged in, so trigger the redirect
-                    signInWithRedirect(auth, provider);
-                    
-                    // Show fallback button after a delay in case it is blocked
-                    setTimeout(() => {
+                    // Check if we just tried to redirect
+                    const isRedirecting = sessionStorage.getItem('cenin_is_redirecting');
+                    if (isRedirecting) {
+                        // We already tried redirecting and it failed/returned null
+                        // Do NOT loop automatically! Show manual button.
+                        sessionStorage.removeItem('cenin_is_redirecting');
                         spinner.style.display = 'none';
-                        statusTitle.innerText = "Redirect taking too long?";
-                        statusText.innerText = "Tap the button below to sign in.";
+                        statusTitle.innerText = "Sign In Required";
+                        statusText.innerText = "Tap the button below to sign in securely.";
                         fallbackBtn.style.display = 'block';
-                    }, 3000);
+                    } else {
+                        // Safe to redirect once automatically
+                        sessionStorage.setItem('cenin_is_redirecting', 'true');
+                        signInWithRedirect(auth, provider);
+                        
+                        setTimeout(() => {
+                            spinner.style.display = 'none';
+                            statusTitle.innerText = "Redirect taking too long?";
+                            statusText.innerText = "Tap the button below to sign in.";
+                            fallbackBtn.style.display = 'block';
+                        }, 3000);
+                    }
                 }
             });
         }
