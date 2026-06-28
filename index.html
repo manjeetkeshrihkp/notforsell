@@ -20,8 +20,11 @@
       --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
-    body { background-color: var(--bg-primary); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-primary); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; opacity: 0; animation: pageFadeIn 0.3s ease-out forwards; }
+    body.fade-out { animation: pageFadeOut 0.2s ease-in forwards; }
+    @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pageFadeOut { from { opacity: 1; } to { opacity: 0; } }
 
     /* Crisp Header */
     header { position: sticky; top: 0; z-index: 100; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; border-bottom: 1px solid var(--border-color); }
@@ -1814,7 +1817,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, doc, addDoc, updateDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, addDoc, updateDoc, setDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -2770,7 +2773,7 @@
       if(randomGrid) randomGrid.innerHTML = ''; 
 
       if(window.currentFPRandomRecs.length > 0) {
-        window.renderFPRandomProducts(window.INITIAL_LOAD_COUNT || 50);
+        window.renderFPRandomProducts(window.INITIAL_LOAD_COUNT || 20);
         if(document.getElementById('fpRandomContainer')) document.getElementById('fpRandomContainer').style.display = "block";
       } else {
         if(document.getElementById('fpRandomContainer')) document.getElementById('fpRandomContainer').style.display = "none";
@@ -2936,7 +2939,7 @@
     
     window.loadMoreFPRandom = function() { window.renderFPRandomProducts(10); };
 
-    window.INITIAL_LOAD_COUNT = 50;
+    window.INITIAL_LOAD_COUNT = 20;
     window.LOAD_MORE_COUNT = 10;
     window.currentBottomRenderCount = 0;
     window.shuffledCatalog = [];
@@ -3010,40 +3013,21 @@
       }
     };
 
-    window.loadMoreProducts = function() {
-      window.renderBottomProducts(window.LOAD_MORE_COUNT);
-    };
+    window.loadMoreProducts = function() { window.renderBottomProducts(window.LOAD_MORE_COUNT); };
 
-    async function fetchStoreProducts() {
+    window.renderHomeSliders = function() {
       const sliderContainer = document.getElementById('latestProductsSlider');
-      try {
-        const deliveryPromise = getDoc(doc(db, "settings", "delivery")).catch(e => null);
-        const productsPromise = getDocs(collection(db, "products"));
-
-        const [deliverySnap, querySnapshot] = await Promise.all([deliveryPromise, productsPromise]);
-
-        if (deliverySnap && deliverySnap.exists()) {
-          window.deliverySettings = deliverySnap.data() || {};
-          window.globalDeliveryFee = window.deliverySettings.fee || 0;
-        }
-
-        querySnapshot.forEach((doc) => {
-          const item = doc.data();
-          item.id = doc.id; 
-          window.globalCatalog.push(item);
-        });
-
-        if(sliderContainer) {
+      if(sliderContainer) {
           let latestCatalog = [...window.globalCatalog].sort((a, b) => {
               const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime() || 0;
               const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime() || 0;
               return tB - tA;
           });
 
-          const top15 = latestCatalog.slice(0, 15);
+          const top10 = latestCatalog.slice(0, 10);
           let sliderHtml = '';
 
-          top15.forEach(item => {
+          top10.forEach(item => {
             const hasOffer = item.offerPrice && item.offerPrice < item.price;
             const primaryImg = (item.images && item.images.length > 0) ? item.images[0] : item.imageUrl;
             const savedClass = window.savedProducts.has(item.id) ? 'saved' : '';
@@ -3096,11 +3080,50 @@
           
           sliderContainer.innerHTML = sliderHtml;
           sliderContainer.scrollLeft = 0;
+      }
+
+      if(window.globalCatalog.length > 0) {
+         window.shuffledCatalog = window.shuffleArray([...window.globalCatalog]);
+         document.getElementById('bottomProductGrid').innerHTML = '';
+         window.currentBottomRenderCount = 0;
+         window.renderBottomProducts(window.INITIAL_LOAD_COUNT || 20);
+      }
+    };
+
+    async function fetchStoreProducts() {
+      // 1. Try to load from local cache first for instant UI response
+      const cachedData = localStorage.getItem('cenin_cached_catalog');
+      if (cachedData) {
+          try {
+              window.globalCatalog = JSON.parse(cachedData);
+              window.renderHomeSliders();
+          } catch(e) { console.error("Cache parse error", e); }
+      }
+
+      try {
+        const deliveryPromise = getDoc(doc(db, "settings", "delivery")).catch(e => null);
+        const productsPromise = getDocs(query(collection(db, "products"), limit(100)));
+
+        const [deliverySnap, querySnapshot] = await Promise.all([deliveryPromise, productsPromise]);
+
+        if (deliverySnap && deliverySnap.exists()) {
+          window.deliverySettings = deliverySnap.data() || {};
+          window.globalDeliveryFee = window.deliverySettings.fee || 0;
         }
 
-        if(window.globalCatalog.length > 0) {
-           window.shuffledCatalog = window.shuffleArray([...window.globalCatalog]);
-          window.renderBottomProducts(window.INITIAL_LOAD_COUNT || 50);
+        const freshCatalog = [];
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          item.id = doc.id; 
+          freshCatalog.push(item);
+        });
+
+        // 2. Compare fresh data with cache. If different, update and re-render.
+        const freshString = JSON.stringify(freshCatalog);
+        if (cachedData !== freshString) {
+            localStorage.setItem('cenin_cached_catalog', freshString);
+            window.globalCatalog = freshCatalog;
+            window.renderHomeSliders(); // Silent re-render
         }
 
         // Initialize wallet fetch logic
@@ -3468,5 +3491,21 @@
 
     fetchStoreProducts();
   </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.nav-item').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith('#') && href !== window.location.pathname.split('/').pop()) {
+                e.preventDefault();
+                document.body.classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 200);
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>
