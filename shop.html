@@ -1468,6 +1468,7 @@
         if (window.currentUser) {
             window.proceedToCheckoutForm();
         } else {
+            localStorage.setItem('cenin_checkout_redirect', 'true');
             const authModal = document.getElementById('authModal');
             if (authModal) authModal.classList.add('active');
         }
@@ -1487,13 +1488,7 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         try {
-            const result = await signInWithPopup(auth, provider);
-            window.currentUser = result.user;
-            
-            const authModal = document.getElementById('authModal');
-            if (authModal) authModal.classList.remove('active');
-            
-            window.proceedToCheckoutForm();
+            await signInWithPopup(auth, provider);
         } catch (error) {
             console.error("Google Sign-In failed:", error);
             if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
