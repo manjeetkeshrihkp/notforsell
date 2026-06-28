@@ -18,12 +18,13 @@
       --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-primary); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; opacity: 0; animation: pageFadeIn 0.3s ease-out forwards; }
-    body.fade-out { animation: pageFadeOut 0.1s ease-in forwards; }
     @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pageFadeOut { from { opacity: 1; } to { opacity: 0; } }
+    body { animation: pageFadeIn 0.4s ease forwards; }
+    body.fade-out { animation: pageFadeOut 0.4s ease forwards; }
+    body { background-color: var(--bg-primary); color: var(--text-main); overflow-x: hidden; padding-bottom: 90px; }
+
 
     /* =========================================
        HEADER
@@ -34,15 +35,12 @@
       justify-content: space-between; align-items: center; padding: 1rem 5%;
       border-bottom: 1px solid var(--border-color); gap: 15px;
     }
-
     .header-title { font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; flex-grow: 1; text-align: center; margin: 0; }
-
     .back-arrow-btn {
       color: var(--text-main); display: flex; align-items: center; justify-content: center;
       background: transparent; border: none; cursor: pointer; padding: 4px;
     }
     .back-arrow-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
     .cart-btn {
       background: transparent; border: none; color: var(--text-main); cursor: pointer;
       display: flex; align-items: center; justify-content: center; padding: 0.5rem;
@@ -55,62 +53,48 @@
       height: 18px; border-radius: 50%; display: flex; align-items: center;
       justify-content: center; transform: translate(25%, -25%);
     }
-
     /* =========================================
        PROFILE SPECIFIC STYLES
     ========================================= */
     .shop-main-container { padding: 1.5rem 5%; max-width: 800px; margin: 0 auto; min-height: 70vh;}
-    
     .profile-header-card { background: var(--bg-secondary); padding: 2.5rem 1.5rem; border-radius: 16px; text-align: center; border: 1px solid var(--border-color); margin-bottom: 2rem; box-shadow: var(--shadow-light); }
     .profile-avatar { width: 80px; height: 80px; background: var(--text-main); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; margin: 0 auto 1rem auto; box-shadow: var(--shadow-hover); border: 2px solid var(--text-main); text-transform: uppercase;}
     .profile-name { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.3rem; }
     .profile-email { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; font-weight: 600; }
-    
     .profile-menu { display: flex; flex-direction: column; gap: 0.8rem; }
     .profile-menu-item { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: var(--transition-smooth); text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 0.95rem; }
     .profile-menu-item:hover { border-color: var(--text-main); box-shadow: var(--shadow-hover); transform: translateY(-2px); }
-    
     .profile-item-left { display: flex; align-items: center; gap: 14px; }
     .profile-item-left svg { width: 22px; height: 22px; stroke: var(--text-main); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    
     .profile-chevron { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: var(--transition-smooth); }
     .profile-menu-item:hover .profile-chevron { stroke: var(--text-main); transform: translateX(4px); }
-
     /* =========================================
        MY ORDERS TRACKING STYLES
     ========================================= */
     #ordersView, #sellerView, #cancelView, #supportView { display: none; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .order-card { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-light); transition: var(--transition-smooth); }
     .order-card:hover { border-color: var(--text-main); box-shadow: var(--shadow-hover); }
     .order-header-row { display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
     .order-id { font-weight: 800; font-size: 0.9rem; color: var(--text-main); text-transform: uppercase; }
     .order-date { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; margin-top: 4px; }
     .order-total { font-weight: 800; color: var(--text-main); font-size: 1.1rem; }
-
     .track-container { display: flex; justify-content: space-between; position: relative; margin: 1rem 0 0.5rem 0; padding: 0 10px; }
     .track-container::before { content: ''; position: absolute; top: 14px; left: 10%; right: 10%; height: 2px; background: var(--border-color); z-index: 1; }
     .track-step { display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 2; width: 25%; position: relative; }
     .track-icon { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); transition: var(--transition-smooth); }
     .track-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; text-align: center; line-height: 1.2; }
-    
     .track-step.active .track-icon { border-color: var(--text-main); color: var(--text-main); box-shadow: 0 0 0 3px rgba(0,0,0,0.1); }
     .track-step.active .track-label { color: var(--text-main); }
-    
     .track-step.completed .track-icon { border-color: #16a34a; background: #16a34a; color: #fff; }
     .track-step.completed .track-label { color: #16a34a; }
-    
     .track-step.cancelled .track-icon { border-color: #ef4444; background: #ef4444; color: #fff; }
     .track-step.cancelled .track-label { color: #ef4444; }
-
     .track-step.warning .track-icon { border-color: #ea580c; color: #ea580c; }
     .track-step.warning .track-label { color: #ea580c; }
-
     .track-step.completed::after { content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: #16a34a; z-index: -1; }
     .track-step.cancelled::after { content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: #ef4444; z-index: -1; }
     .track-step:last-child::after { display: none; }
-
     /* =========================================
        BOTTOM APP NAVIGATION
     ========================================= */
@@ -118,10 +102,8 @@
     .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.7rem; font-weight: 600; gap: 0.2rem; transition: var(--transition-smooth); width: 20%; cursor: pointer;}
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: var(--transition-smooth); }
     .nav-item:hover, .nav-item.active { color: var(--text-main); }
-    
     .nav-item.profile-item:active svg, 
     .nav-item.profile-item.active svg { fill: var(--accent); stroke: var(--text-main); }
-
     /* =========================================
        WALLET STYLES
     ========================================= */
@@ -130,7 +112,6 @@
     .wallet-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(234, 179, 8, 0.15) 0%, transparent 60%); pointer-events: none; }
     .wallet-label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 0.5rem; }
     .wallet-balance { font-size: 3rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0.5rem; color: var(--accent); }
-    
     .history-title { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: var(--text-main); }
     .history-list { display: flex; flex-direction: column; gap: 0.8rem; }
     .history-item { background: var(--bg-primary); border: 1px solid var(--border-color); padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-light); }
@@ -138,7 +119,6 @@
     .history-info p { font-size: 0.75rem; color: var(--text-muted); }
     .history-amount.credit { color: #16a34a; font-weight: 800; font-size: 1.1rem; }
     .history-amount.debit { color: #dc2626; font-weight: 800; font-size: 1.1rem; }
-
     /* Shared Profile internal tabs logic */
     .profile-nav { display: flex; background: var(--bg-primary); border-bottom: 1px solid var(--border-color); overflow-x: auto; scrollbar-width: none; }
     .profile-nav::-webkit-scrollbar { display: none; }
@@ -157,9 +137,7 @@
     .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
     .empty-state svg { width: 48px; height: 48px; stroke: currentColor; fill: none; stroke-width: 1.5; margin-bottom: 1rem; opacity: 0.5; }
     .empty-state h3 { font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main); }
-    
     .seller-section-title { font-size: 0.9rem; font-weight: 800; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin: 1.5rem 0 1rem 0; text-transform: uppercase; }
-
     /* =========================================
        SOCIAL MODAL STYLES
     ========================================= */
@@ -175,7 +153,6 @@
     .social-icon-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-main); text-decoration: none; font-size: 0.75rem; font-weight: 700; transition: transform 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px;}
     .social-icon-btn:hover { transform: scale(1.1); }
     .social-icon-box { width: 50px; height: 50px; border-radius: 14px; display: flex; justify-content: center; align-items: center; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    
     .icon-tg { background: #0088cc; }
     .icon-yt { background: #ff0000; }
     .icon-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
@@ -183,8 +160,6 @@
     .icon-x { background: #000000; border: 1px solid #333; }
     .icon-li { background: #0077b5; }
     .social-icon-box svg { width: 24px; height: 24px; fill: currentColor; }
-
-
     /* Loading Spinner */
     .mandatory-loading {
       position: fixed;
@@ -210,7 +185,6 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
     /* =========================================
        CONFIRMATION MODAL STYLES
     ========================================= */
@@ -292,7 +266,6 @@
       background: var(--bg-secondary);
       border-color: var(--text-main);
     }
-
     /* Highlight NO state */
     .confirm-modal-overlay.highlight-no .confirm-btn-yes {
       background: transparent;
@@ -313,7 +286,6 @@
       background: var(--accent);
       color: #000;
     }
-
     /* =========================================
        PROFILE HEADER CARD STATUS STYLES
     ========================================= */
@@ -339,7 +311,6 @@
     .status-location svg, .status-battery svg {
       stroke: currentColor;
     }
-      
     }
     /* Premium Loader */
     .global-loader {
@@ -350,7 +321,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: opacity 0.5s ease, visibility 0.5s ease;
+        transition: opacity 0.1s ease, visibility 0.1s ease;
     }
     .global-loader.hidden {
         opacity: 0;
@@ -437,18 +408,12 @@
   };
 </script>
 
-
-
-
-
   <!-- Loading Splash Screen -->
   <div id="mandatoryLoadingScreen" class="mandatory-loading">
     <div class="spinner"></div>
     <p style="font-weight: 700; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Verifying session...</p>
   </div>
-
   <!-- Mandatory Google Sign In Overlay -->
-
   <!-- =========================================
        AUTH GATE
   ========================================= -->
@@ -462,9 +427,7 @@
     </button>
     <div id="authErrorMsg" style="display: none; margin-top: 1rem; font-size: 0.85rem; color: #dc2626; background: #fef2f2; padding: 0.75rem; border-radius: 8px; border: 1px solid #fecaca;"></div>
   </div>
-
   <div id="profileContent" style="display: none;">
-
   <!-- =========================================
        MAIN PROFILE VIEW
   ========================================= -->
@@ -474,15 +437,11 @@
       <h1 class="header-title">Your Profile</h1>
       <div style="width: 32px;"></div> <!-- Spacer to keep title perfectly centered -->
     </header>
-
     <main class="shop-main-container">
-      
       <!-- Profile Identification Card -->
       <div class="profile-header-card">
-        
         <h2 id="profileName" class="profile-name">Guest User</h2>
         <p id="profileEmail" class="profile-email">Add an address during checkout to securely update your profile.</p>
-        
         <!-- Profile Meta Status (Location & Battery) -->
         <div class="profile-meta-status">
           <div class="status-location" id="statusLocation">
@@ -495,10 +454,8 @@
           </div>
         </div>
       </div>
-
       <!-- Settings Menu (Flat List) -->
       <div class="profile-menu">
-        
         <a href="#" class="profile-menu-item" onclick="window.showOrdersView(event)">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
@@ -506,7 +463,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="coupons.html" class="profile-menu-item">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
@@ -514,7 +470,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="#" class="profile-menu-item" onclick="window.showWalletView(event)">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
@@ -522,7 +477,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="#" class="profile-menu-item" onclick="window.showSellerView(event)">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
@@ -530,7 +484,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="creator.html" class="profile-menu-item">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
@@ -538,7 +491,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="#" class="profile-menu-item" onclick="window.showAddressView(event)">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -546,7 +498,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <!-- MODIFIED: Cancel Order -->
         <a href="#" class="profile-menu-item" onclick="window.showCancelView(event)">
           <div class="profile-item-left">
@@ -555,7 +506,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="privacy.html" class="profile-menu-item">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -563,7 +513,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="terms.html" class="profile-menu-item">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -571,7 +520,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <a href="faq.html" class="profile-menu-item">
           <div class="profile-item-left">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -579,7 +527,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <!-- MODIFIED: Customer Care internal link -->
         <a href="#" class="profile-menu-item" onclick="window.showSupportView(event)">
           <div class="profile-item-left">
@@ -588,7 +535,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <!-- MODIFIED: Social Media Modal Trigger -->
         <a href="#" class="profile-menu-item" onclick="window.showSocialModal(event)">
           <div class="profile-item-left">
@@ -597,7 +543,6 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
         <!-- Sign Out Button -->
         <a href="#" class="profile-menu-item" onclick="window.triggerSignOut(event)" style="border-color: #ef4444; color: #ef4444;">
           <div class="profile-item-left">
@@ -606,10 +551,8 @@
           </div>
           <svg class="profile-chevron" viewBox="0 0 24 24" style="stroke: #ef4444;"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </a>
-
       </div>
     </main>
-
     <!-- Internal Detail Tabs for edits (Hidden initially, triggered by JS) -->
     <div style="display:none;" id="legacyTabsWrapper">
         <div class="profile-nav">
@@ -639,9 +582,7 @@
         <div id="tab-orders" class="tab-content"></div>
         <div id="tab-wallet" class="tab-content"></div>
     </div>
-
   </div>
-
   <!-- =========================================
        MY ORDERS VIEW (LIVE TRACKING)
   ========================================= -->
@@ -657,7 +598,6 @@
       <div id="ordersListContainer"></div>
     </main>
   </div>
-
   <!-- =========================================
        WALLET VIEW 
   ========================================= -->
@@ -679,7 +619,6 @@
       <div class="history-list" id="walletHistoryContainer"></div>
     </main>
   </div>
-
   <!-- =========================================
        SAVED ADDRESSES VIEW 
   ========================================= -->
@@ -691,12 +630,9 @@
       <h1 class="header-title">Saved Addresses</h1>
       <div style="width: 32px;"></div> <!-- Spacer to keep title perfectly centered -->
     </header>
-
     <main class="profile-container">
       <div id="addressListContainer"></div>
-
       <button class="save-btn" id="addAddressBtn" style="margin-top: 1rem; background: transparent; color: var(--text-main); border: 2px dashed var(--border-color);" onclick="window.showAddAddressForm()">+ Add New Address</button>
-
       <div id="addAddressFormContainer" class="form-card" style="display: none; margin-top: 1.5rem;">
         <h3 style="margin-bottom: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Add New Address</h3>
         <form id="newAddressForm" onsubmit="event.preventDefault(); window.saveExtraAddress();">
@@ -759,7 +695,6 @@
       </div>
     </main>
   </div>
-
   <!-- =========================================
        BECOME A SELLER VIEW 
   ========================================= -->
@@ -775,7 +710,6 @@
        <div class="form-card" id="sellerFormContainer">
           <h3 style="margin-bottom: 1.5rem; font-weight: 800; text-transform: uppercase;">Seller Onboarding</h3>
           <form id="sellerForm" onsubmit="window.submitSellerForm(event)">
-             
              <!-- Personal & Contact Info -->
              <div class="seller-section-title">Contact Info</div>
              <div class="form-group"><label>Full Name *</label><input type="text" id="sellerFullName" required></div>
@@ -783,7 +717,6 @@
              <div class="form-group"><label>WhatsApp Number *</label><input type="tel" id="sellerWhatsapp" placeholder="10-digit mobile" required pattern="[0-9]{10}" maxlength="10" title="Please enter exactly 10 digits" oninput="this.value = this.value.replace(/[^0-9]/g, '');"></div>
              <div class="form-group"><label>Email Address *</label><input type="email" id="sellerEmail" required></div>
              <div class="form-group"><label>Date of Birth</label><input type="date" id="sellerDob"></div>
-             
              <!-- Business Info -->
              <div class="seller-section-title">Business Info</div>
              <div class="form-group"><label>Store Name / Brand Name *</label><input type="text" id="sellerStoreName" required></div>
@@ -802,7 +735,6 @@
              <div class="form-group"><label>Business Description</label><input type="text" id="sellerDescription"></div>
              <div class="form-group"><label>Instagram Profile Link</label><input type="url" id="sellerInstagram"></div>
              <div class="form-group"><label>Facebook Page Link</label><input type="url" id="sellerFacebook"></div>
-
              <!-- Address -->
              <div class="seller-section-title">Pickup Address</div>
              <div class="form-group"><label>Pickup Address *</label><input type="text" id="sellerAddress" required></div>
@@ -812,13 +744,11 @@
                  <div class="form-group" style="flex:1;"><label>State *</label><input type="text" id="sellerState" required></div>
              </div>
              <div class="form-group"><label>Pincode *</label><input type="text" id="sellerPincode" required></div>
-
              <!-- Identity Info -->
              <div class="seller-section-title">Identity & Legal</div>
              <div class="form-group"><label>Aadhaar Number *</label><input type="text" id="sellerAadhaar" placeholder="[Aadhaar Redacted]" required></div>
              <div class="form-group"><label>PAN Number *</label><input type="text" id="sellerPan" required></div>
              <div class="form-group"><label>GST Number (Optional)</label><input type="text" id="sellerGst"></div>
-             
              <!-- Product Info -->
              <div class="seller-section-title">Product Details</div>
              <div class="form-group"><label>Store Description *</label><input type="text" id="sellerStoreDesc" required></div>
@@ -834,7 +764,6 @@
                 <label>Bulk Orders Available?</label>
                 <select id="sellerBulkOrders" required><option value="No">No</option><option value="Yes">Yes</option></select>
              </div>
-
              <!-- Banking Details -->
              <div class="seller-section-title">Banking Details</div>
              <div class="form-group"><label>Account Holder Name *</label><input type="text" id="sellerBankAccountHolder" required></div>
@@ -843,7 +772,6 @@
              <div class="form-group"><label>Confirm Account Number *</label><input type="text" id="sellerBankAccountNoConfirm" required></div>
              <div class="form-group"><label>IFSC Code *</label><input type="text" id="sellerBankIfsc" required></div>
              <div class="form-group"><label>UPI ID *</label><input type="text" id="sellerUpiId" required></div>
-
              <!-- Operations -->
              <div class="seller-section-title">Shipping & Operations</div>
              <div class="form-group">
@@ -861,7 +789,6 @@
              <div class="form-group"><label>Have you sold online before? *</label><select id="sellerSoldOnlineBefore" required><option value="No">No</option><option value="Yes">Yes</option></select></div>
              <div class="form-group"><label>Existing Marketplace Links</label><input type="text" id="sellerMarketplaceLinks"></div>
              <div class="form-group"><label>Monthly Sales Estimate</label><input type="text" id="sellerMonthlySales"></div>
-
              <!-- Agreements -->
              <div class="seller-section-title">Agreements</div>
              <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; flex-direction:column; gap:10px; margin-bottom: 20px;">
@@ -870,7 +797,6 @@
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="sellerAgree3" required> I agree to CENIN Privacy Policy.</label>
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="sellerAgree4" required> I understand CENIN may reject my application if information is incorrect.</label>
              </div>
-
              <button type="submit" class="save-btn" id="sellerSubmitBtn">Submit Application</button>
           </form>
        </div>
@@ -882,7 +808,6 @@
        </div>
     </main>
   </div>
-
   <!-- =========================================
        CANCEL ORDER VIEW 
   ========================================= -->
@@ -900,7 +825,6 @@
          <button id="cancelTab-eligible" class="filter-tab active" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: none; background: var(--text-main); color: var(--bg-primary); cursor: pointer;" onclick="window.switchCancelSubTab('eligible')">Request Cancel</button>
          <button id="cancelTab-status" class="filter-tab" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); cursor: pointer;" onclick="window.switchCancelSubTab('status')">Cancellation Status</button>
        </div>
-
        <div id="cancelableOrdersList">
            <p style="text-align:center; padding: 2rem; color: var(--text-muted);">Checking recent orders...</p>
        </div>
@@ -939,20 +863,17 @@
                  <label>Specify Reason *</label>
                  <textarea id="cancelReasonDetail" placeholder="Please provide additional details about your cancellation request..." style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-main); font-family:inherit; outline:none; resize:vertical; min-height:80px;"></textarea>
               </div>
-              
               <!-- Refund Notice -->
               <div style="background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.25); padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem; font-size: 0.8rem; color: #16a34a; line-height: 1.4; font-weight: 600;">
                  <span style="font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px;">Refund Policy Details:</span>
                  Under Cenin's strict refund guidelines, 100% of your cancelled order amount will be credited back instantly to your Cenin Wallet. No direct bank card or UPI account cashbacks are supported.
               </div>
-              
               <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 1.5rem;">
                  <input type="checkbox" id="cancelAgree" required style="width: auto; margin-top: 3px; cursor: pointer;">
                  <label for="cancelAgree" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); cursor: pointer; text-transform: none; letter-spacing: 0;">
                     I agree to the wallet refund policy and request full cancellation of this order.
                  </label>
               </div>
-              
               <button type="submit" class="save-btn" style="background:#ef4444; color:#fff;">Confirm Cancellation</button>
            </form>
         </div>
@@ -964,7 +885,6 @@
        </div>
     </main>
   </div>
-
   <!-- =========================================
        NEW: CUSTOMER CARE VIEW
   ========================================= -->
@@ -1035,9 +955,7 @@
       </div>
     </main>
   </div>
-
   </div>
-
   <!-- Custom Confirmation Modal Overlay -->
   <div class="confirm-modal-overlay" id="confirmModalOverlay">
     <div class="confirm-modal" onclick="event.stopPropagation()">
@@ -1048,7 +966,6 @@
       </div>
     </div>
   </div>
-
   <!-- Bottom App Navigation -->
   <nav class="bottom-nav" id="bottomNavBar">
     <a href="index.html" class="nav-item">
@@ -1072,7 +989,6 @@
       <span>Profile</span>
     </a>
   </nav>
-
   <!-- =========================================
        NEW: SOCIAL MEDIA MODAL OVERLAY
   ========================================= -->
@@ -1096,7 +1012,6 @@
     .icon-x { background: #000000; border: 1px solid #333; }
     .icon-li { background: #0077b5; }
     .social-icon-box svg { width: 24px; height: 24px; fill: currentColor; }
-      
     }
     /* Premium Loader */
     .global-loader {
@@ -1107,7 +1022,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: opacity 0.5s ease, visibility 0.5s ease;
+        transition: opacity 0.1s ease, visibility 0.1s ease;
     }
     .global-loader.hidden {
         opacity: 0;
@@ -1168,7 +1083,6 @@
         100% { transform: translateY(0px) rotate(0deg); }
     }
 </style>
-
   <div class="social-modal-overlay" id="socialModalOverlay" onclick="window.closeSocialModal(event)">
      <div class="social-modal" onclick="event.stopPropagation()">
         <div class="social-modal-header">
@@ -1209,11 +1123,9 @@
         </div>
      </div>
   </div>
-
   <!-- Base UI Logic -->
   <script>
     window.formatPrice = (num) => `₹${Number(num).toLocaleString('en-IN')}`;
-
     window.initTopStatusBar = function() {
         // Battery status
         if (navigator.getBattery) {
@@ -1224,7 +1136,6 @@
                     const textEl = document.getElementById('batteryText');
                     const iconEl = document.getElementById('batteryIcon');
                     const batteryEl = document.getElementById('statusBattery');
-                    
                     if (textEl) {
                         textEl.innerText = `${level}%${isCharging ? ' ⚡' : ''}`;
                     }
@@ -1253,7 +1164,6 @@
             const batteryEl = document.getElementById('statusBattery');
             if (batteryEl) batteryEl.style.display = 'none';
         }
-
         // Location according to user IP with fallback API
         function fetchLocation() {
             fetch('https://ipapi.co/json/')
@@ -1294,16 +1204,13 @@
         fetchLocation();
     };
     window.initTopStatusBar();
-
     window.switchTab = function(tabId, element) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
-      
       const targetTab = document.getElementById(`tab-${tabId}`);
       if(targetTab) targetTab.classList.add('active');
       if(element) element.classList.add('active');
     };
-
     window.loadLocalDetails = function() {
         const saved = localStorage.getItem('cenin_saved_address');
         if (saved) {
@@ -1319,12 +1226,10 @@
         }
     };
     window.loadLocalDetails();
-
     window.saveProfileDetails = function() {
         const btn = document.getElementById('saveProfileBtn');
         const originalText = btn.innerText;
         btn.innerText = "Saving...";
-
         const data = {
             name: document.getElementById('profName').value.trim(),
             email: document.getElementById('profEmail').value.trim(),
@@ -1333,9 +1238,7 @@
             city: document.getElementById('profCity').value.trim(),
             pincode: document.getElementById('profPincode').value.trim()
         };
-
         localStorage.setItem('cenin_saved_address', JSON.stringify(data));
-        
         if (window.currentUser && window.db && window.setDoc && window.doc) {
             try {
                 const email = window.currentUser.email.toLowerCase().trim();
@@ -1343,7 +1246,6 @@
                 window.setDoc(userRef, { address: data }, { merge: true }).catch(e => console.error("Firebase address sync failed:", e));
             } catch(e) {}
         }
-        
         setTimeout(() => {
             btn.innerText = "Details Saved ✓";
             btn.style.backgroundColor = "#16a34a";
@@ -1354,7 +1256,6 @@
             }, 2000);
         }, 500);
     };
-
     // =========================================
     // SELLER, CANCEL, SUPPORT & SOCIAL ROUTING
     // =========================================
@@ -1364,7 +1265,6 @@
         document.getElementById('sellerView').style.display = 'block';
         window.scrollTo(0, 0);
     };
-
     window.closeSellerView = function() {
         document.getElementById('sellerView').style.display = 'none';
         document.getElementById('mainProfileView').style.display = 'block';
@@ -1373,14 +1273,12 @@
         document.getElementById('sellerForm').reset();
         window.scrollTo(0, 0);
     };
-
     window.submitSellerForm = async function(e) {
         e.preventDefault();
         const btn = document.getElementById('sellerSubmitBtn');
         const originalText = btn.innerText;
         btn.disabled = true;
         btn.innerText = "Submitting...";
-        
         const accNo = document.getElementById('sellerBankAccountNo').value.trim();
         const confirmAccNo = document.getElementById('sellerBankAccountNoConfirm').value.trim();
         if(accNo !== confirmAccNo) {
@@ -1390,7 +1288,6 @@
             document.getElementById('sellerBankAccountNoConfirm').focus();
             return;
         }
-
         const payload = {
             fullName: document.getElementById('sellerFullName').value.trim(),
             mobile: document.getElementById('sellerMobile').value.trim(),
@@ -1433,7 +1330,6 @@
             status: 'pending',
             appliedAt: new Date().toISOString()
         };
-
         try {
             if (window.addDoc && window.collection && window.db) {
                 await window.addDoc(window.collection(window.db, "seller_applications"), payload);
@@ -1448,13 +1344,11 @@
             btn.innerText = originalText;
         }
     };
-
     window.currentCancelSubTab = 'eligible';
     window.switchCancelSubTab = function(tab) {
         window.currentCancelSubTab = tab;
         const btnEligible = document.getElementById('cancelTab-eligible');
         const btnStatus = document.getElementById('cancelTab-status');
-        
         if (tab === 'eligible') {
             if (btnEligible) {
                 btnEligible.style.background = 'var(--text-main)';
@@ -1474,21 +1368,17 @@
                 btnEligible.style.color = 'var(--text-muted)';
             }
         }
-        
         // Hide form if open and go back to list
         document.getElementById('cancelFormContainer').style.display = 'none';
         document.getElementById('cancelSuccessMsg').style.display = 'none';
         document.getElementById('cancelableOrdersList').style.display = 'block';
-        
         window.renderCancelableOrdersList();
     };
-
     window.showCancelView = function(e) {
         if(e) e.preventDefault();
         document.getElementById('mainProfileView').style.display = 'none';
         document.getElementById('cancelView').style.display = 'block';
         window.scrollTo(0, 0);
-        
         // Reset sub tab
         window.currentCancelSubTab = 'eligible';
         const btnEligible = document.getElementById('cancelTab-eligible');
@@ -1501,10 +1391,8 @@
             btnStatus.style.background = 'transparent';
             btnStatus.style.color = 'var(--text-muted)';
         }
-        
         if(window.fetchCancelableOrders) window.fetchCancelableOrders();
     };
-
     window.closeCancelView = function() {
         document.getElementById('cancelView').style.display = 'none';
         document.getElementById('mainProfileView').style.display = 'block';
@@ -1512,22 +1400,18 @@
         document.getElementById('cancelSuccessMsg').style.display = 'none';
         window.scrollTo(0, 0);
     };
-
     window.selectOrderToCancel = function(orderId, orderContact = '') {
         const inputEl = document.getElementById('cancelOrderId');
         const formattedId = `#${orderId.slice(-6).toUpperCase()}`;
         inputEl.value = formattedId;
         inputEl.dataset.fullOrderId = orderId;
-        
         let preName = '';
         let preEmail = '';
         let prePhone = orderContact || '';
-
         if (window.currentUser) {
             preName = window.currentUser.displayName || '';
             preEmail = window.currentUser.email || '';
         }
-
         if (!preName || !preEmail || !prePhone) {
             const savedStr = localStorage.getItem('cenin_saved_address');
             if(savedStr) {
@@ -1539,22 +1423,18 @@
                 } catch(e){}
             }
         }
-
         document.getElementById('cancelName').value = preName;
         document.getElementById('cancelEmail').value = preEmail;
         document.getElementById('cancelPhone').value = prePhone;
-
         // Reset cancellation form fields
         document.getElementById('cancelReasonSelect').value = '';
         document.getElementById('cancelReasonDetail').value = '';
         document.getElementById('cancelReasonDetailContainer').style.display = 'none';
         document.getElementById('cancelReasonDetail').required = false;
         document.getElementById('cancelAgree').checked = false;
-
         document.getElementById('cancelableOrdersList').style.display = 'none';
         document.getElementById('cancelFormContainer').style.display = 'block';
     };
-
     window.toggleCancelReasonSpecify = function() {
         const select = document.getElementById('cancelReasonSelect');
         const container = document.getElementById('cancelReasonDetailContainer');
@@ -1567,20 +1447,16 @@
             detailInput.required = false;
         }
     };
-
     window.submitCancelRequest = async function(e) {
         e.preventDefault();
-        
         const btn = e.target.querySelector('button[type="submit"]');
         if (btn) {
             btn.disabled = true;
             btn.innerText = "Processing cancellation...";
         }
-
         const inputEl = document.getElementById('cancelOrderId');
         const formattedId = inputEl.value;
         const fullOrderId = inputEl.dataset.fullOrderId;
-
         try {
             // Update Firestore order status to cancellation_pending
             const orderRef = window.doc(window.db, "orders", fullOrderId);
@@ -1590,7 +1466,6 @@
                 cancellationReasonDetail: document.getElementById('cancelReasonDetail').value || '',
                 cancellationRequestedAt: { seconds: Math.floor(Date.now() / 1000) }
             });
-
             // Display success
             const msgHeader = document.querySelector('#cancelSuccessMsg h2');
             if (msgHeader) {
@@ -1598,7 +1473,6 @@
             }
             document.getElementById('cancelFormContainer').style.display = 'none';
             document.getElementById('cancelSuccessMsg').style.display = 'block';
-            
             // Reload cancelable orders list in background
             if (window.fetchCancelableOrders) window.fetchCancelableOrders();
             // Reload my orders if active
@@ -1612,30 +1486,25 @@
             }
         }
     };
-
     window.showSupportView = function(e) {
         if(e) e.preventDefault();
         document.getElementById('mainProfileView').style.display = 'none';
         document.getElementById('supportView').style.display = 'block';
         window.scrollTo(0, 0);
-
         // Reset non-prefilled fields
         document.getElementById('suppCategory').value = '';
         document.getElementById('suppOrderId').value = '';
         document.getElementById('suppContactMethod').value = 'email';
         document.getElementById('suppSubject').value = '';
         document.getElementById('suppDescription').value = '';
-
         // Pre-fill Name, Email, and Phone
         let nameVal = '';
         let emailVal = '';
         let phoneVal = '';
-
         if (window.currentUser) {
             nameVal = window.currentUser.displayName || '';
             emailVal = window.currentUser.email || '';
         }
-
         const savedStr = localStorage.getItem('cenin_saved_address');
         if (savedStr) {
             try {
@@ -1645,24 +1514,20 @@
                 if (data.contact) phoneVal = data.contact;
             } catch(err){}
         }
-
         document.getElementById('suppName').value = nameVal;
         document.getElementById('suppEmail').value = emailVal;
         document.getElementById('suppPhone').value = phoneVal;
     };
-
     window.closeSupportView = function() {
         document.getElementById('supportView').style.display = 'none';
         document.getElementById('mainProfileView').style.display = 'block';
         document.getElementById('supportFormContainer').style.display = 'block';
         document.getElementById('supportSuccessMsg').style.display = 'none';
         window.scrollTo(0, 0);
-
         const url = new URL(window.location);
         url.searchParams.delete('view');
         window.history.replaceState({}, '', url);
     };
-
     window.submitSupportForm = async function(e) {
         e.preventDefault();
         const btn = document.getElementById('suppSubmitBtn');
@@ -1671,7 +1536,6 @@
             btn.disabled = true;
             btn.innerText = 'Submitting...';
         }
-
         const name = document.getElementById('suppName').value.trim();
         const email = document.getElementById('suppEmail').value.trim();
         const phone = document.getElementById('suppPhone').value.trim();
@@ -1680,7 +1544,6 @@
         const contactMethod = document.getElementById('suppContactMethod').value;
         const subject = document.getElementById('suppSubject').value.trim();
         const description = document.getElementById('suppDescription').value.trim();
-
         try {
             if (window.addDoc && window.collection && window.db) {
                 await window.addDoc(window.collection(window.db, "support_tickets"), {
@@ -1698,7 +1561,6 @@
             } else {
                 console.warn("Firestore not fully loaded, simulating successful submission.");
             }
-
             document.getElementById('supportFormContainer').style.display = 'none';
             document.getElementById('supportSuccessMsg').style.display = 'block';
         } catch (err) {
@@ -1711,14 +1573,12 @@
             }
         }
     };
-
     window.showSocialModal = function(e) {
         if(e) e.preventDefault();
         const modal = document.getElementById('socialModalOverlay');
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('active'), 10);
     };
-
     window.closeSocialModal = function(e) {
         if(e && e.target !== document.getElementById('socialModalOverlay')) return;
         const modal = document.getElementById('socialModalOverlay');
@@ -1726,54 +1586,42 @@
         setTimeout(() => modal.style.display = 'none', 300);
     };
   </script>
-
   <!-- ADDRESS MANAGER LOGIC -->
   <script>
     window.editingExtraAddressIndex = null;
-
     // Custom Confirmation Dialog
     window.showConfirmDialog = function(message, onConfirm, options = {}) {
         const overlay = document.getElementById('confirmModalOverlay');
         const msgEl = document.getElementById('confirmModalMessage');
-        
         if (options.highlightNo) {
             overlay.classList.add('highlight-no');
         } else {
             overlay.classList.remove('highlight-no');
         }
-
         const yesBtn = document.getElementById('confirmBtnYes');
         const noBtn = document.getElementById('confirmBtnNo');
-
         msgEl.innerText = message;
-        
         // Clean up previous event listeners by cloning the buttons
         const newYesBtn = yesBtn.cloneNode(true);
         yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
-        
         const newNoBtn = noBtn.cloneNode(true);
         noBtn.parentNode.replaceChild(newNoBtn, noBtn);
-
         newYesBtn.addEventListener('click', () => {
             overlay.classList.remove('active');
             setTimeout(() => overlay.style.display = 'none', 300);
             onConfirm();
         });
-
         const closeConfirm = () => {
             overlay.classList.remove('active');
             setTimeout(() => overlay.style.display = 'none', 300);
         };
-
         newNoBtn.addEventListener('click', closeConfirm);
         overlay.onclick = (e) => {
             if (e.target === overlay) closeConfirm();
         };
-
         overlay.style.display = 'flex';
         setTimeout(() => overlay.classList.add('active'), 10);
     };
-
     window.showAddressView = function(e) {
         if(e) e.preventDefault();
         document.getElementById('mainProfileView').style.display = 'none';
@@ -1781,17 +1629,14 @@
         window.scrollTo(0, 0);
         window.renderAddresses();
     };
-
     window.closeAddressView = function() {
         document.getElementById('addressView').style.display = 'none';
         document.getElementById('mainProfileView').style.display = 'block';
         window.scrollTo(0, 0);
     };
-
     window.renderAddresses = function() {
         const container = document.getElementById('addressListContainer');
         let html = '';
-        
         const saved = localStorage.getItem('cenin_saved_address');
         if (saved) {
             try {
@@ -1815,7 +1660,6 @@
         } else {
             html += `<div class="empty-state" style="padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius:12px; margin-bottom:1rem;"><p>No default address found. Please add one in 'My Details' or during checkout.</p></div>`;
         }
-
         const extras = JSON.parse(localStorage.getItem('cenin_extra_addresses') || '[]');
         extras.forEach((data, index) => {
             html += `
@@ -1833,10 +1677,8 @@
                </div>
             </div>`;
         });
-
         container.innerHTML = html;
     };
-
     window.closeLegacyTabs = function() {
         document.getElementById('legacyTabsWrapper').style.display = 'none';
         document.querySelector('.profile-menu').style.display = 'flex';
@@ -1844,7 +1686,6 @@
         const nav = document.querySelector('.profile-nav');
         if(nav) nav.style.display = 'flex';
     };
-
     window.editDefaultAddress = function() {
         window.closeAddressView();
         document.getElementById('legacyTabsWrapper').style.display = 'block';
@@ -1854,26 +1695,22 @@
         if(nav) nav.style.display = 'none';
         window.switchTab('details', document.querySelector('.profile-tab:first-child'));
     };
-
     window.confirmEditDefaultAddress = function() {
         window.showConfirmDialog("Are you sure you want to edit?", () => {
             window.editDefaultAddress();
         });
     };
-
     window.confirmDeleteDefaultAddress = function() {
         window.showConfirmDialog("Are you sure you want to delete?", () => {
             localStorage.removeItem('cenin_saved_address');
             window.renderAddresses();
         });
     };
-
     window.confirmEditExtraAddress = function(index) {
         window.showConfirmDialog("Are you sure you want to edit?", () => {
             window.showEditExtraAddressForm(index);
         });
     };
-
     window.confirmDeleteExtraAddress = function(index) {
         window.showConfirmDialog("Are you sure you want to delete?", () => {
             const extras = JSON.parse(localStorage.getItem('cenin_extra_addresses') || '[]');
@@ -1882,18 +1719,14 @@
             window.renderAddresses();
         });
     };
-
     window.showEditExtraAddressForm = function(index) {
         const extras = JSON.parse(localStorage.getItem('cenin_extra_addresses') || '[]');
         const data = extras[index];
         if (!data) return;
-
         window.editingExtraAddressIndex = index;
-        
         // Update header
         const header = document.querySelector('#addAddressFormContainer h3');
         if (header) header.innerText = "Edit Saved Address";
-
         // Fill form fields
         document.getElementById('newAddrName').value = data.name || '';
         document.getElementById('newAddrEmail').value = data.email || '';
@@ -1903,37 +1736,30 @@
         document.getElementById('newAddrCity').value = data.city || '';
         document.getElementById('newAddrState').value = data.state || '';
         document.getElementById('newAddrPincode').value = data.pincode || '';
-
         // Show form container
         document.getElementById('addAddressFormContainer').style.display = 'block';
         document.getElementById('addAddressBtn').style.display = 'none';
-        
         // Scroll to form
         document.getElementById('addAddressFormContainer').scrollIntoView({ behavior: 'smooth' });
     };
-
     window.showAddAddressForm = function() {
         window.editingExtraAddressIndex = null;
         const header = document.querySelector('#addAddressFormContainer h3');
         if (header) header.innerText = "Add New Address";
-
         document.getElementById('newAddressForm').reset();
         document.getElementById('addAddressFormContainer').style.display = 'block';
         document.getElementById('addAddressBtn').style.display = 'none';
-        
         const emailInput = document.getElementById('newAddrEmail');
         if (emailInput) {
             emailInput.value = window.currentUser ? (window.currentUser.email || '') : '';
         }
     };
-
     window.hideAddAddressForm = function() {
         document.getElementById('addAddressFormContainer').style.display = 'none';
         document.getElementById('addAddressBtn').style.display = 'block';
         document.getElementById('newAddressForm').reset();
         window.editingExtraAddressIndex = null;
     };
-
     window.saveExtraAddress = function() {
         const data = {
             name: document.getElementById('newAddrName').value.trim(),
@@ -1956,14 +1782,11 @@
         window.renderAddresses();
     };
   </script>
-
-
   <!-- Firebase Integration -->
   <script type="module">
     import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
       authDomain: "ceninasia.firebaseapp.com",
@@ -1972,17 +1795,14 @@
       messagingSenderId: "234745308370",
       appId: "1:234745308370:web:77a89729fa6d829d37390b"
     };
-
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     const db = getFirestore(app);
     const auth = getAuth(app);
-
     // Provider declared at module level
     const provider = new GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
-
     // Handle redirect result (fallback for popup-blocked browsers)
     getRedirectResult(auth).then((result) => {
       if (result && result.user) {
@@ -1991,18 +1811,14 @@
         if (authModal) authModal.classList.remove('active');
       }
     }).catch((e) => console.error('Redirect auth error:', e));
-
     window.triggerGoogleSignIn = function() {
         const btn = document.getElementById('triggerGoogleSignInBtn');
         const googleIconSvg = `<svg class="google-logo-svg" width="18" height="18" viewBox="0 0 24 24" style="margin-right:8px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
-
         if (window.location.protocol === 'file:') {
             alert('Firebase Authentication requires a web server.');
             return;
         }
-
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
         if (isMobile) {
             // Mobile: always use redirect - popup is blocked inside modals on mobile browsers
             if (btn) btn.innerHTML = 'Redirecting to Google...';
@@ -2041,7 +1857,6 @@
               });
         }
     };
-
     window.db = db;
     window.auth = auth;
     window.doc = doc;
@@ -2051,7 +1866,6 @@
     window.setDoc = setDoc;
     window.collection = collection;
     window.globalCatalog = [];
-
     window.updateMenuWalletBalance = async function() {
         let userEmail = window.currentUser ? window.currentUser.email.toLowerCase().trim() : "";
         if (!userEmail) {
@@ -2061,7 +1875,6 @@
             }
         }
         if (!userEmail) return;
-
         try {
             const userRef = doc(db, "users", userEmail);
             const userSnap = await getDoc(userRef);
@@ -2077,10 +1890,8 @@
             console.error("Error fetching menu wallet balance:", e);
         }
     };
-
     window.currentUserOrders = [];
     let unsubscribeOrders = null;
-
     window.setupRealtimeOrdersListener = function(userEmail) {
         if (unsubscribeOrders) {
             unsubscribeOrders();
@@ -2090,7 +1901,6 @@
             window.currentUserOrders = [];
             return;
         }
-
         const q = query(collection(db, "orders"), where("email", "==", userEmail));
         unsubscribeOrders = onSnapshot(q, async (querySnapshot) => {
             if (window.globalCatalog.length === 0) {
@@ -2106,16 +1916,13 @@
                     console.error("Error loading products catalog for real-time tracking:", e);
                 }
             }
-
             const orders = [];
             querySnapshot.forEach(docSnap => {
                 let order = docSnap.data();
                 order.id = docSnap.id;
                 orders.push(order);
             });
-
             window.currentUserOrders = orders;
-
             // Trigger re-renders of active tabs
             if (document.getElementById('ordersView').style.display === 'block') {
                 if (window.renderMyOrdersList) window.renderMyOrdersList();
@@ -2123,7 +1930,6 @@
             if (document.getElementById('cancelView').style.display === 'block') {
                 if (window.renderCancelableOrdersList) window.renderCancelableOrdersList();
             }
-
             // Sync menu wallet balance display & wallet view data in real-time
             if (window.updateMenuWalletBalance) window.updateMenuWalletBalance();
             if (document.getElementById('walletView').style.display === 'block') {
@@ -2133,9 +1939,6 @@
             console.error("Realtime orders query listener failed:", error);
         });
     };
-
-
-
     function showSuspensionOverlay(email, userIp, userData) {
         document.body.style.overflow = 'hidden';
         let overlay = document.getElementById("suspendedOverlay");
@@ -2159,10 +1962,8 @@
             overlay.style.fontFamily = "'Inter', sans-serif";
             document.body.appendChild(overlay);
         }
-        
         const appealStatus = userData ? userData.appealStatus : "";
         let appealContent = "";
-        
         if (!appealStatus) {
             appealContent = `
               <h3 style="font-size:1rem; font-weight:700; color:#fafafa; margin-bottom:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">Appeal Suspension</h3>
@@ -2209,29 +2010,24 @@
               </div>
             `;
         }
-        
         overlay.innerHTML = `
           <div style="width:100%; max-width:480px; display:flex; flex-direction:column; gap:1.2rem; text-align:center; margin: auto 0; padding: 1.5rem 0;">
             <h2 style="font-size:clamp(1.5rem, 6vw, 1.8rem); font-weight:800; color:#ef4444; letter-spacing:1px; text-transform:uppercase; margin:0;">Account Suspended</h2>
             <p style="color:#a1a1aa; font-size:clamp(0.8rem, 3.5vw, 0.9rem); margin-top:-0.3rem; margin-bottom:0; line-height:1.4;">Your account or network access has been restricted due to policy violations.</p>
-            
             <!-- YouTube Video -->
             <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
               <iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0" allowfullscreen></iframe>
             </div>
-            
             <!-- Appeal Section -->
             <div id="appealSection" style="background:#18181b; border:1px solid rgba(255,255,255,0.08); padding:1.2rem; border-radius:12px; text-align:left;">
               ${appealContent}
             </div>
-            
             <!-- Logout / Switch Account Button -->
             <button id="suspendedLogoutBtn" style="background:transparent; border:1px solid rgba(255,255,255,0.1); color:#fafafa; padding:0.75rem; border-radius:8px; font-weight:600; font-size:0.85rem; cursor:pointer; transition:all 0.2s; font-family:inherit;">
               Sign Out / Use Different Account
             </button>
           </div>
         `;
-        
         const logoutBtn = document.getElementById("suspendedLogoutBtn");
         if (logoutBtn) {
             logoutBtn.onclick = async () => {
@@ -2243,22 +2039,18 @@
                 }
             };
         }
-        
         const submitBtn = document.getElementById("submitAppealBtn");
         if (submitBtn) {
             submitBtn.onclick = async () => {
                 const nameVal = document.getElementById("appealName").value.trim();
                 const phoneVal = document.getElementById("appealPhone").value.trim();
                 const reasonVal = document.getElementById("appealReason").value.trim();
-                
                 if (!nameVal || !phoneVal || !reasonVal) {
                     alert("Please fill in all details for the appeal.");
                     return;
                 }
-                
                 submitBtn.disabled = true;
                 submitBtn.innerText = "Submitting Appeal...";
-                
                 try {
                     const userRef = doc(db, "users", email);
                     await setDoc(userRef, {
@@ -2270,7 +2062,6 @@
                             submittedAt: new Date()
                         }
                     }, { merge: true });
-                    
                     alert("Your appeal has been submitted successfully!");
                     window.location.reload();
                 } catch(err) {
@@ -2282,7 +2073,6 @@
             };
         }
     }
-
     async function checkUserBlockStatus(user) {
         if (!user) return true;
         const email = user.email.toLowerCase().trim();
@@ -2297,20 +2087,17 @@
         } catch (e) {
             userIp = ""; // silently continue, never block auth
         }
-        
         try {
             const userRef = doc(db, "users", email);
             const userSnap = await getDoc(userRef);
             let isBlocked = false;
             let userData = null;
-            
             if (userSnap.exists()) {
                 userData = userSnap.data();
                 if (userData.blocked) {
                     isBlocked = true;
                 }
             }
-            
             if (!isBlocked && userIp) {
                 const ipRef = doc(db, "blocked_ips", userIp);
                 const ipSnap = await getDoc(ipRef);
@@ -2319,18 +2106,15 @@
                     await setDoc(userRef, { blocked: true }, { merge: true });
                 }
             }
-            
             if (isBlocked) {
                 showSuspensionOverlay(email, userIp, userData);
                 return false;
             }
-            
             const overlay = document.getElementById("suspendedOverlay");
             if (overlay) {
                 overlay.remove();
                 document.body.style.overflow = '';
             }
-            
             const updateData = {
                 email: email,
                 displayName: user.displayName || "",
@@ -2346,9 +2130,6 @@
             return true;
         }
     }
-
-
-
     onAuthStateChanged(auth, async (firebaseUser) => {
       let user = firebaseUser;
       if (!user && localStorage.getItem('cenin_guest_session') === 'true') {
@@ -2363,49 +2144,39 @@
       const loading = document.getElementById('mandatoryLoadingScreen');
       if (loading) loading.style.display = 'none';
       if(window.removeGlobalLoader) window.removeGlobalLoader();
-
         if (user) {
             const allowed = await checkUserBlockStatus(user);
             if (!allowed) return;
-
             window.currentUser = user;
             const authGate = document.getElementById('authGate');
             const profileContent = document.getElementById('profileContent');
             if (authGate) authGate.style.display = 'none';
             if (profileContent) profileContent.style.display = 'block';
-
-            
             // Populate profile layout details
             const pName = document.getElementById('profileName');
             const pEmail = document.getElementById('profileEmail');
             const pAvatar = document.getElementById('profileAvatar');
-            
             if (pName) pName.innerText = user.displayName || "Google User";
             if (pEmail) pEmail.innerText = user.email;
             if (pAvatar) pAvatar.innerText = (user.displayName || user.email || "?").charAt(0).toUpperCase();
-
             // Auto fill profile details form email
             const profEmailInput = document.getElementById('profEmail');
             if (profEmailInput) {
                 profEmailInput.value = user.email;
             }
-
             window.setupRealtimeOrdersListener(user.email.toLowerCase().trim());
-            
             try {
                 const email = user.email.toLowerCase().trim();
                 const userRef = window.doc(window.db, "users", email);
                 const userSnap = await window.getDoc(userRef);
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
-                    
                     // Wishlist sync
                     const serverWishlist = userData.wishlist || [];
                     const localWishlist = JSON.parse(localStorage.getItem('cenin_saved_items')) || [];
                     const mergedWishlist = [...new Set([...serverWishlist, ...localWishlist])];
                     localStorage.setItem('cenin_saved_items', JSON.stringify(mergedWishlist));
                     await window.setDoc(userRef, { wishlist: mergedWishlist }, { merge: true }).catch(e => console.error(e));
-
                     // Address sync
                     if (userData.address) {
                         localStorage.setItem('cenin_saved_address', JSON.stringify(userData.address));
@@ -2413,7 +2184,6 @@
                     if (userData.extraAddresses) {
                         localStorage.setItem('cenin_extra_addresses', JSON.stringify(userData.extraAddresses));
                     }
-
                     // Cart sync
                     const serverCart = userData.cart || {};
                     const localCart = JSON.parse(localStorage.getItem('cenin_cart_items_map')) || {};
@@ -2424,7 +2194,6 @@
             } catch (e) {
                 console.error("Error loading user cloud details on auth change:", e);
             }
-            
             if (window.loadLocalDetails) window.loadLocalDetails();
             window.fetchUserData();
         } else {
@@ -2436,11 +2205,6 @@
             window.setupRealtimeOrdersListener(null);
         }
     });
-
-
-
-
-
     window.triggerSignOut = async function(e) {
         if(e) e.preventDefault();
         window.showConfirmDialog("Are you sure you want to sign out?", async () => {
@@ -2453,7 +2217,6 @@
             }
         }, { highlightNo: true });
     };
-    
     window.syncCartCounter = function() {
         const cartItems = JSON.parse(localStorage.getItem('cenin_cart_items_map')) || {};
         let count = 0;
@@ -2464,7 +2227,6 @@
         if (document.getElementById('addrCartCounter')) document.getElementById('addrCartCounter').innerText = count; 
     };
     window.syncCartCounter();
-
     document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
         if(urlParams.get('view') === 'orders') {
@@ -2477,7 +2239,6 @@
             }, 300);
         }
     });
-
     window.showOrdersView = function(e) {
         if(e) e.preventDefault();
         document.getElementById('mainProfileView').style.display = 'none';
@@ -2485,21 +2246,17 @@
         window.scrollTo(0, 0);
         window.fetchMyOrders();
     };
-
     window.closeOrdersView = function() {
         document.getElementById('ordersView').style.display = 'none';
         document.getElementById('mainProfileView').style.display = 'block';
         window.scrollTo(0, 0);
-        
         const url = new URL(window.location);
         url.searchParams.delete('view');
         window.history.replaceState({}, '', url);
     };
-
     window.fetchMyOrders = async function() {
         const container = document.getElementById('ordersListContainer');
         container.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--text-muted); font-weight: 600;">Fetching your latest orders...</p>';
-        
         let userEmail = window.currentUser ? window.currentUser.email.toLowerCase().trim() : "";
         if (!userEmail) {
             const savedAddrStr = localStorage.getItem('cenin_saved_address');
@@ -2507,7 +2264,6 @@
                 try { userEmail = JSON.parse(savedAddrStr).email.toLowerCase().trim(); } catch(e){}
             }
         }
-
         if (!userEmail) {
             container.innerHTML = `
                 <div style="text-align:center; padding: 4rem 1rem;">
@@ -2518,11 +2274,9 @@
                 </div>`;
             return;
         }
-
         if (!unsubscribeOrders) {
             window.setupRealtimeOrdersListener(userEmail);
         }
-
         // Resolve global product catalog if needed, then render
         if (window.globalCatalog.length === 0) {
             try {
@@ -2537,14 +2291,11 @@
                 console.error("Error loading products catalog:", e);
             }
         }
-
         window.renderMyOrdersList();
     };
-
     window.renderMyOrdersList = function() {
         const container = document.getElementById('ordersListContainer');
         if (!container) return;
-
         let userEmail = window.currentUser ? window.currentUser.email.toLowerCase().trim() : "";
         if (!userEmail) {
             const savedAddrStr = localStorage.getItem('cenin_saved_address');
@@ -2552,12 +2303,10 @@
                 try { userEmail = JSON.parse(savedAddrStr).email.toLowerCase().trim(); } catch(e){}
             }
         }
-
         const activeOrders = window.currentUserOrders.filter(order => {
             const status = (order.status || 'placed').toLowerCase();
             return status !== 'cancelled' && status !== 'cancellation_pending' && status !== 'cancellation_requested';
         });
-
         if (activeOrders.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center; padding: 4rem 1rem;">
@@ -2568,23 +2317,19 @@
                 </div>`;
             return;
         }
-
         activeOrders.sort((a,b) => {
             const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime() || 0;
             const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime() || 0;
             return tB - tA;
         });
-
         let html = '';
         activeOrders.forEach(order => {
             const status = (order.status || 'placed').toLowerCase();
-            
             let step1 = 'active', step2 = '', step3 = '', step4 = '';
             let isRejected = (status === 'rejected');
             let step2Label = isRejected ? 'Rejected' : 'Approved';
             let step2Class = isRejected ? 'cancelled' : '';
             let step2Icon = isRejected ? '✕' : '2';
-
             if (status === 'confirmed' || status === 'verified' || status === 'processing' || status === 'approved') { 
                 step1 = 'completed'; step2 = 'active'; 
             }
@@ -2597,7 +2342,6 @@
             else if (isRejected) {
                 step1 = 'completed'; step2 = 'completed';
             }
-
             let trackingHtml = `
                 <div class="track-container">
                     <div class="track-step ${step1}"><div class="track-icon">${step1 === 'completed' ? '✓' : '1'}</div><span class="track-label">Placed</span></div>
@@ -2606,7 +2350,6 @@
                     <div class="track-step ${step4}"><div class="track-icon">✓</div><span class="track-label">Delivered</span></div>
                 </div>
             `;
-
             let dateStr = 'Recent Order';
             if(order.createdAt) {
                 let d;
@@ -2616,19 +2359,15 @@
                     dateStr = d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
                 }
             }
-            
             const totalAmount = order.totalAmount || order.amount || order.total || order.price || 0;
-
             let itemsHtml = '<div class="order-items-wrapper" style="margin-bottom: 1.5rem;">';
             if (order.items && typeof order.items === 'object') {
                 for (let itemId in order.items) {
                     const qty = order.items[itemId];
                     const product = window.globalCatalog.find(p => p.id === itemId);
-                    
                     let img = 'https://via.placeholder.com/80?text=Item';
                     let name = 'Product Unavailable';
                     let priceFormatted = '';
-                    
                     if (product) {
                         img = (product.images && product.images.length > 0) ? product.images[0] : product.imageUrl;
                         name = product.name || 'Premium Item';
@@ -2668,7 +2407,6 @@
         });
         container.innerHTML = html;
     };
-
     window.showWalletView = function(e) {
         if(e) e.preventDefault();
         document.getElementById('mainProfileView').style.display = 'none';
@@ -2676,17 +2414,14 @@
         window.scrollTo(0, 0);
         window.fetchWalletData();
     };
-
     window.closeWalletView = function() {
         document.getElementById('walletView').style.display = 'none';
         document.getElementById('mainProfileView').style.display = 'block';
         window.scrollTo(0, 0);
     };
-
     window.fetchWalletData = async function() {
         const container = document.getElementById('walletHistoryContainer');
         container.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--text-muted); font-weight: 600;">Loading wallet data...</p>';
-        
         let userEmail = window.currentUser ? window.currentUser.email.toLowerCase().trim() : "";
         if (!userEmail) {
             const savedAddrStr = localStorage.getItem('cenin_saved_address');
@@ -2694,7 +2429,6 @@
                 try { userEmail = JSON.parse(savedAddrStr).email.toLowerCase().trim(); } catch(e){}
             }
         }
-
         if (!userEmail) {
             document.getElementById('walletBalanceDisplay').innerText = "₹0";
             container.innerHTML = `
@@ -2705,24 +2439,18 @@
                 </div>`;
             return;
         }
-
         try {
             const userRef = doc(window.db, "users", userEmail);
             const userSnap = await getDoc(userRef);
-            
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                
                 const balance = Number(userData.walletBalance) || 0;
                 document.getElementById('walletBalanceDisplay').innerText = window.formatPrice(balance);
                 const label = document.getElementById('menuWalletLabel');
                 if (label) label.innerHTML = `Wallet <span style="color:#16a34a; font-weight:800; margin-left:4px;">(${window.formatPrice(balance)})</span>`;
-
                 const history = userData.walletHistory || [];
-                
                 if (history.length > 0) {
                     history.sort((a,b) => (b.date?.seconds || 0) - (a.date?.seconds || 0));
-                    
                     let hHtml = '';
                     history.forEach(tx => {
                         let txDateStr = "Recent";
@@ -2730,11 +2458,9 @@
                             const d = new Date(tx.date.seconds * 1000);
                             txDateStr = d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) + ' at ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
                         }
-                        
                         const isCredit = tx.type === 'credit';
                         const sign = isCredit ? '+' : '-';
                         const amountClass = isCredit ? 'credit' : 'debit';
-                        
                         hHtml += `
                         <div class="history-item">
                             <div class="history-info">
@@ -2767,14 +2493,11 @@
             container.innerHTML = '<p style="text-align:center; color:#ef4444; padding:2rem;">Failed to securely load wallet data. Please check your connection.</p>';
         }
     };
-
     window.fetchCancelableOrders = async function() {
         document.getElementById('cancelableOrdersList').style.display = 'block';
         document.getElementById('cancelFormContainer').style.display = 'none';
-
         const container = document.getElementById('cancelableOrdersList');
         container.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--text-muted); font-weight: 600;">Scanning recent orders...</p>';
-        
         let userEmail = window.currentUser ? window.currentUser.email.toLowerCase().trim() : "";
         if (!userEmail) {
             const savedAddrStr = localStorage.getItem('cenin_saved_address');
@@ -2782,7 +2505,6 @@
                 try { userEmail = JSON.parse(savedAddrStr).email.toLowerCase().trim(); } catch(e){}
             }
         }
-
         if (!userEmail) {
             container.innerHTML = `
                 <div style="text-align:center; padding: 4rem 1rem;">
@@ -2792,11 +2514,9 @@
                 </div>`;
             return;
         }
-
         if (!unsubscribeOrders) {
             window.setupRealtimeOrdersListener(userEmail);
         }
-
         // Resolve global product catalog if needed, then render
         if (window.globalCatalog.length === 0) {
             try {
@@ -2811,14 +2531,11 @@
                 console.error("Error loading products catalog:", e);
             }
         }
-
         window.renderCancelableOrdersList();
     };
-
     window.renderCancelableOrdersList = function() {
         const container = document.getElementById('cancelableOrdersList');
         if (!container) return;
-
         let userEmail = window.currentUser ? window.currentUser.email.toLowerCase().trim() : "";
         if (!userEmail) {
             const savedAddrStr = localStorage.getItem('cenin_saved_address');
@@ -2826,25 +2543,20 @@
                 try { userEmail = JSON.parse(savedAddrStr).email.toLowerCase().trim(); } catch(e){}
             }
         }
-
         const now = Date.now();
         const ONE_DAY = 24 * 60 * 60 * 1000;
-
         const cancelableOrders = window.currentUserOrders.filter(order => {
             const status = (order.status || 'placed').toLowerCase();
-
             if (window.currentCancelSubTab === 'eligible') {
                 let orderTime = 0;
                 if(order.createdAt?.seconds) orderTime = order.createdAt.seconds * 1000;
                 else orderTime = new Date(order.createdAt).getTime();
-                
                 return (now - orderTime <= ONE_DAY) && 
                     (status === 'placed' || status === 'verified' || status === 'confirmed');
             } else {
                 return (status === 'cancellation_pending' || status === 'cancellation_requested' || status === 'cancelled');
             }
         });
-        
         if (cancelableOrders.length === 0) {
             const noDataMsg = window.currentCancelSubTab === 'eligible' 
                 ? 'You have no orders placed within the last 24 hours available for cancellation.'
@@ -2852,7 +2564,6 @@
             const noDataTitle = window.currentCancelSubTab === 'eligible'
                 ? 'No Eligible Orders'
                 : 'No Cancellation Requests';
-                
             container.innerHTML = `
                 <div style="text-align:center; padding: 4rem 1rem;">
                     <svg viewBox="0 0 24 24" width="60" height="60" stroke="var(--border-color)" fill="none" stroke-width="2" style="margin-bottom:1rem;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -2862,20 +2573,17 @@
                 </div>`;
             return;
         }
-
         cancelableOrders.sort((a,b) => {
             const tA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt).getTime() || 0;
             const tB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt).getTime() || 0;
             return tB - tA;
         });
-
         let html = '';
         if (window.currentCancelSubTab === 'eligible') {
             html = '<p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; letter-spacing:0.5px;">Orders available to cancel:</p>';
         } else {
             html = '<p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; letter-spacing:0.5px;">Your cancellation requests:</p>';
         }
-        
         cancelableOrders.forEach(order => {
             let dateStr = 'Recent Order';
             if(order.createdAt) {
@@ -2885,7 +2593,6 @@
             const totalAmount = order.totalAmount || 0;
             const status = (order.status || 'placed').toLowerCase();
             const isPendingOrCancelled = (status === 'cancellation_pending' || status === 'cancellation_requested' || status === 'cancelled');
-
             let itemsNames = [];
             if (order.items) {
                 for (let itemId in order.items) {
@@ -2893,17 +2600,13 @@
                     if (product) itemsNames.push(`${order.items[itemId]}x ${product.name}`);
                 }
             }
-            
             let cancelProgressHtml = '';
             let clickAction = `window.selectOrderToCancel('${order.id}', '${order.customerInfo?.contact || ''}')`;
             let cardStyle = `border-color: var(--border-color); cursor:pointer;`;
-
             if (isPendingOrCancelled) {
                 clickAction = 'event.stopPropagation();';
                 cardStyle = `border-color: var(--border-color); opacity: 0.95; cursor: not-allowed; background-color: var(--bg-secondary);`;
-                
                 let pStep1 = 'completed', pStep2 = '', pStep3 = '', pStep4 = '';
-                
                 if (status === 'cancellation_pending' || status === 'cancellation_requested') {
                     pStep2 = 'warning active';
                 } else if (status === 'cancelled') {
@@ -2911,7 +2614,6 @@
                     pStep3 = 'cancelled';
                     pStep4 = 'completed';
                 }
-
                 cancelProgressHtml = `
                     <div class="track-container" style="margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px dashed var(--border-color);">
                         <div class="track-step ${pStep1}"><div class="track-icon">✓</div><span class="track-label" style="font-size:0.6rem;">Placed</span></div>
@@ -2921,7 +2623,6 @@
                     </div>
                 `;
             }
-
             html += `
                 <div class="order-card" style="${cardStyle}" onclick="${clickAction}">
                     <div class="order-header-row" style="border-bottom: none; padding-bottom: 0;">
@@ -2944,7 +2645,6 @@
         });
         container.innerHTML = html;
     };
-
     window.fetchUserData = function() {
         if(window.updateMenuWalletBalance) window.updateMenuWalletBalance();
         if(document.getElementById('ordersView').style.display === 'block') window.fetchMyOrders();
@@ -2959,7 +2659,7 @@
             if (href && !href.startsWith('#') && href !== window.location.pathname.split('/').pop()) {
                 e.preventDefault();
                 document.body.classList.add('fade-out');
-                window.location.href = href;;
+                setTimeout(() => { window.location.href = href; }, 0);
             }
         });
     });
