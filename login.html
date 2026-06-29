@@ -2,208 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- CRITICAL FIX 1: Viewport meta tag prevents mobile zooming and ensures the button is properly scaled/clickable -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Authenticating | CENIN</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-primary: #121212;
-            --bg-secondary: #1E1E1E;
-            --text-main: #FFFFFF;
-            --text-muted: #A0A0A0;
-            --accent: #EAB308;
-            --border-color: #333333;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { 
-            background: var(--bg-primary); 
-            color: var(--text-main); 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            overflow: hidden;
-        }
-        .auth-container {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            padding: 2rem;
-            max-width: 400px;
-            width: 100%;
+            margin-top: 50px;
+            background-color: #f4f7f6;
+            color: #333;
         }
-        .logo {
-            font-size: 2.5rem;
-            letter-spacing: 4px;
-            font-weight: 900;
-            margin-bottom: 2rem;
-            background: linear-gradient(135deg, #fff, #888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border-color);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem auto;
-            display: none;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .status-text {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-        .status-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--text-main);
-        }
-        .fallback-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 1.5rem;
-            background: var(--text-main);
-            color: var(--bg-primary);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s ease;
-        }
-        .fallback-btn:active { transform: scale(0.98); }
-        #debugLog {
-            margin-top: 2rem;
-            font-size: 0.7rem;
-            color: #ef4444;
-            text-align: left;
-            background: rgba(239, 68, 68, 0.1);
-            padding: 10px;
-            border-radius: 6px;
-            display: none;
-            word-wrap: break-word;
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #7f8c8d; font-size: 16px; }
+        
+        /* CRITICAL FIX 2: Ensures the Google button has a high z-index 
+           so it doesn't get "blocked" by invisible mobile UI elements or sticky footers */
+        #g_id_onload, .g_id_signin {
+            position: relative;
+            z-index: 9999;
+            margin-top: 30px;
+            display: inline-block; 
         }
     </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="logo">CENIN</div>
-        <div class="spinner" id="spinner" style="display: block;"></div>
-        <div class="status-title" id="statusTitle">Authenticating...</div>
-        <p class="status-text" id="statusText">Please wait while we check your login status.</p>
-        <button class="fallback-btn" id="fallbackBtn" onclick="manualSignIn()" style="display: none;">
-            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            Sign in with Google
-        </button>
-        
-        <div id="debugLog"></div>
+
+    <h1>CENIN</h1>
+    <h3 id="status-text">Authenticating...</h3>
+    <p id="status-sub">Please wait while we check your login status.</p>
+
+    <!-- 1. Load the modern Google Identity Services library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- 2. Configure the Sign-In settings -->
+    <div id="g_id_onload"
+         data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCeninSignIn"
+         data-auto_prompt="false">
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    <!-- 3. Render the actual "Sign in with Google" button -->
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="outline"
+         data-text="signin_with"
+         data-size="large">
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
-            authDomain: "ceninasia.firebaseapp.com",
-            projectId: "ceninasia",
-            storageBucket: "ceninasia.firebasestorage.app",
-            messagingSenderId: "234745308370",
-            appId: "1:234745308370:web:77a89729fa6d829d37390b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-
-        const statusTitle = document.getElementById('statusTitle');
-        const statusText = document.getElementById('statusText');
-        const spinner = document.getElementById('spinner');
-        const fallbackBtn = document.getElementById('fallbackBtn');
-        const debugLog = document.getElementById('debugLog');
-
-        function logError(msg) {
-            debugLog.style.display = 'block';
-            debugLog.innerHTML += msg + "<br>";
-        }
-
-        let isHandling = false;
-
-        window.manualSignIn = async function() {
-            spinner.style.display = 'block';
-            fallbackBtn.style.display = 'none';
-            statusTitle.innerText = "Connecting...";
-            statusText.innerText = "Please complete sign in through the Google popup window.";
-
-            try {
-                // Explicitly set persistence to ensure token survives navigation (critical for mobile private tabs/webviews)
-                await setPersistence(auth, browserLocalPersistence);
+    <script>
+        function handleCeninSignIn(response) {
+            if (response.credential) {
+                // SUCCESS! The user signed in.
+                console.log("Success! Token received:", response.credential);
                 
-                // ALWAYS use popup for all devices (bypasses ITP redirect issues)
-                const authPromise = signInWithPopup(auth, provider);
-                const result = await authPromise;
-                if (result && result.user) {
-                    statusTitle.innerText = "Success!";
-                    statusText.innerText = "Redirecting you back to the app...";
-                    let returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    // Prevent infinite loop if returnUrl is somehow login.html
-                    if (returnUrl.includes('login.html')) {
-                        returnUrl = 'index.html';
+                // Update the UI
+                document.getElementById('status-text').innerText = "Login Successful!";
+                document.getElementById('status-sub').innerText = "Redirecting to dashboard...";
+
+                // TODO: Send this token to your backend server to verify it and create a session.
+                // Example:
+                /*
+                fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: response.credential })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        window.location.href = '/dashboard';
                     }
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
-                }
-            } catch (error) {
-                console.error("Popup Error:", error);
-                spinner.style.display = 'none';
-                fallbackBtn.style.display = 'flex';
-                
-                if (error.code === 'auth/popup-blocked') {
-                    statusTitle.innerText = "Popup Blocked";
-                    statusText.innerText = "Your browser blocked the Google Sign-In popup. Please allow popups for this site and tap the button again.";
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    statusTitle.innerText = "Sign In Cancelled";
-                    statusText.innerText = "You closed the Google sign-in window.";
-                } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
-                    statusTitle.innerText = "Browser Not Supported";
-                    statusText.innerText = "Google Sign-In doesn't work in this embedded browser. Please open this page in a standard Chrome or Safari browser.";
-                } else {
-                    statusTitle.innerText = "Authentication Failed";
-                    statusText.innerText = error.message;
-                }
+                });
+                */
+            } else {
+                console.error("Sign-in failed or was closed by user.");
+                document.getElementById('status-sub').innerText = "Sign-in failed. Please try again.";
             }
-        };
-
-        async function processAuth() {
-            // Check if user is already signed in
-            onAuthStateChanged(auth, (user) => {
-                if (isHandling) return;
-                
-                if (user) {
-                    isHandling = true;
-                    spinner.style.display = 'block';
-                    fallbackBtn.style.display = 'none';
-                    statusTitle.innerText = "Authenticated!";
-                    statusText.innerText = "Redirecting you back...";
-                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
-                } else {
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
-                    statusTitle.innerText = "Sign In Required";
-                    statusText.innerText = "Tap the button below to sign in securely.";
-                }
-            });
         }
-
-        processAuth();
     </script>
 </body>
 </html>
