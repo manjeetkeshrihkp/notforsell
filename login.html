@@ -108,7 +108,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
@@ -138,20 +138,26 @@
         let isHandling = false;
 
         window.manualSignIn = async function() {
-            // ALWAYS use popup for all devices (bypasses ITP redirect issues)
-            const authPromise = signInWithPopup(auth, provider);
-
             spinner.style.display = 'block';
             fallbackBtn.style.display = 'none';
             statusTitle.innerText = "Connecting...";
             statusText.innerText = "Please complete sign in through the Google popup window.";
 
             try {
+                // Explicitly set persistence to ensure token survives navigation (critical for mobile private tabs/webviews)
+                await setPersistence(auth, browserLocalPersistence);
+                
+                // ALWAYS use popup for all devices (bypasses ITP redirect issues)
+                const authPromise = signInWithPopup(auth, provider);
                 const result = await authPromise;
                 if (result && result.user) {
                     statusTitle.innerText = "Success!";
                     statusText.innerText = "Redirecting you back to the app...";
-                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+                    let returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+                    // Prevent infinite loop if returnUrl is somehow login.html
+                    if (returnUrl.includes('login.html')) {
+                        returnUrl = 'index.html';
+                    }
                     setTimeout(() => { window.location.href = returnUrl; }, 500);
                 }
             } catch (error) {
