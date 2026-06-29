@@ -106,13 +106,12 @@
         <div id="debugLog"></div>
     </div>
 
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
-            // MUST MATCH EXACTLY WITH VERCEL URL
             authDomain: "notforsell.vercel.app", 
             projectId: "ceninasia",
             storageBucket: "ceninasia.firebasestorage.app",
@@ -165,41 +164,38 @@
         }
 
         window.manualSignIn = function() {
+            // Update UI instantly
             spinner.style.display = 'block';
             fallbackBtn.style.display = 'none';
             statusTitle.innerText = "Connecting...";
             statusText.innerText = "Authenticating with Google...";
 
-            // 8-Second Timeout Safety Net
+            // Safety timeout
             const hangTimeout = setTimeout(() => {
-                resetUI("Connection timed out. If you are in WhatsApp/Instagram, please open this in standard Chrome/Safari. Otherwise, check your Vercel proxy setup.");
-                logError("Auth iframe failed to load. Check vercel.json deployment.");
+                resetUI("Connection timed out. Please check your internet or try again.");
+                logError("Popup blocked or failed to initialize.");
             }, 8000);
 
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                signInWithRedirect(auth, provider).catch(error => {
+            // CRITICAL FIX: Use Popup for ALL devices now that the Vercel proxy is handling the domain.
+            signInWithPopup(auth, provider)
+                .then((result) => {
                     clearTimeout(hangTimeout);
-                    console.error("Redirect Auth Error:", error);
-                    logError(error.code);
-                    resetUI("Authentication failed to start. Please try again.");
+                    if (result && result.user) handleSuccessRedirect();
+                })
+                .catch((error) => {
+                    clearTimeout(hangTimeout);
+                    console.error("Popup Auth Error:", error);
+                    
+                    if (error.code === 'auth/popup-blocked') {
+                        logError("Popup Blocked");
+                        resetUI("Your mobile browser blocked the Google window. Please tap the button again.");
+                    } else if (error.code !== 'auth/popup-closed-by-user') {
+                        logError(error.code);
+                        resetUI("Sign in failed. Please try again.");
+                    } else {
+                        resetUI("Sign in cancelled.");
+                    }
                 });
-            } else {
-                signInWithPopup(auth, provider)
-                    .then((result) => {
-                        clearTimeout(hangTimeout);
-                        if (result && result.user) handleSuccessRedirect();
-                    })
-                    .catch((error) => {
-                        clearTimeout(hangTimeout);
-                        console.error("Popup Auth Error:", error);
-                        if (error.code !== 'auth/popup-closed-by-user') {
-                            logError(error.code);
-                        }
-                        resetUI("Sign in cancelled or failed.");
-                    });
-            }
         };
 
         async function processAuth() {
@@ -216,7 +212,6 @@
                 }
             } catch (error) {
                 console.error("Redirect Result Error:", error);
-                logError("Redirect Error: " + error.code);
             }
 
             onAuthStateChanged(auth, (user) => {
@@ -229,6 +224,6 @@
         }
 
         processAuth();
-    </script>
+</script>
 </body>
 </html>
