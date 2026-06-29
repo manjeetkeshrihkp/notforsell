@@ -105,9 +105,17 @@
         
         <div id="debugLog"></div>
     </div>
+
+
+
+
+
+
+
+
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
@@ -136,73 +144,112 @@
 
         let isHandling = false;
 
+        function handleSuccessRedirect() {
+            if (isHandling) return;
+            isHandling = true;
+            spinner.style.display = 'block';
+            fallbackBtn.style.display = 'none';
+            statusTitle.innerText = "Success!";
+            statusText.innerText = "Redirecting you back to the app...";
+            
+            let returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+            if (returnUrl.includes('login.html')) {
+                returnUrl = 'index.html';
+            }
+            setTimeout(() => { window.location.href = returnUrl; }, 500);
+        }
+
+        function resetUI(errorMsg) {
+            spinner.style.display = 'none';
+            fallbackBtn.style.display = 'flex';
+            statusTitle.innerText = "Sign In Required";
+            if (errorMsg) {
+                statusText.innerText = errorMsg;
+            } else {
+                statusText.innerText = "Tap the button below to sign in securely.";
+            }
+        }
+
         window.manualSignIn = function() {
-            // Update UI
             spinner.style.display = 'block';
             fallbackBtn.style.display = 'none';
             statusTitle.innerText = "Connecting...";
-            statusText.innerText = "Please complete sign in with Google.";
+            statusText.innerText = "Authenticating with Google...";
 
-            // CRITICAL FIX: Trigger signInWithPopup immediately. 
-            // Any 'await' or delay before this line causes mobile browsers to block the popup.
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    if (result && result.user) {
-                        statusTitle.innerText = "Success!";
-                        statusText.innerText = "Redirecting you back to the app...";
-                        let returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                        if (returnUrl.includes('login.html')) {
-                            returnUrl = 'index.html';
-                        }
-                        setTimeout(() => { window.location.href = returnUrl; }, 500);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Auth Error:", error);
-                    logError(error.code + " - " + error.message);
-                    
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
-                    
-                    if (error.code === 'auth/popup-blocked') {
-                        statusTitle.innerText = "Popup Blocked";
-                        statusText.innerText = "Your browser blocked the sign-in window. Please check your browser settings.";
-                    } else if (error.code === 'auth/popup-closed-by-user') {
-                        statusTitle.innerText = "Sign In Cancelled";
-                        statusText.innerText = "You closed the Google sign-in window.";
-                    } else {
-                        statusTitle.innerText = "Authentication Failed";
-                        statusText.innerText = "Please try again.";
-                    }
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // Mobile strictly requires redirect to survive tracking prevention
+                signInWithRedirect(auth, provider).catch(error => {
+                    console.error("Redirect Auth Error:", error);
+                    logError(error.code);
+                    resetUI("Authentication failed to start. Please try again.");
                 });
+            } else {
+                // PC can safely use popup
+                signInWithPopup(auth, provider)
+                    .then((result) => {
+                        if (result && result.user) handleSuccessRedirect();
+                    })
+                    .catch((error) => {
+                        console.error("Popup Auth Error:", error);
+                        if (error.code !== 'auth/popup-closed-by-user') {
+                            logError(error.code);
+                        }
+                        resetUI("Sign in cancelled or failed.");
+                    });
+            }
         };
 
-        function processAuth() {
-            // Check if user is already signed in on page load
+        async function processAuth() {
+            // 1. ALWAYS start with the spinner visible to prevent UI flashing
+            spinner.style.display = 'block';
+            fallbackBtn.style.display = 'none';
+            statusTitle.innerText = "Checking authentication...";
+            statusText.innerText = "Please wait.";
+
+            try {
+                // 2. WAIT for the redirect result before doing anything else
+                const redirectResult = await getRedirectResult(auth);
+                if (redirectResult && redirectResult.user) {
+                    handleSuccessRedirect();
+                    return; // Stop here, login was successful
+                }
+            } catch (error) {
+                console.error("Redirect Result Error:", error);
+                logError("Redirect Error: " + error.code);
+            }
+
+            // 3. If no redirect is processing, check the standard saved auth state
             onAuthStateChanged(auth, (user) => {
-                if (isHandling) return;
-                
                 if (user) {
-                    isHandling = true;
-                    spinner.style.display = 'block';
-                    fallbackBtn.style.display = 'none';
-                    statusTitle.innerText = "Authenticated!";
-                    statusText.innerText = "Redirecting you back...";
-                    let returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    if (returnUrl.includes('login.html')) {
-                        returnUrl = 'index.html';
-                    }
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
+                    handleSuccessRedirect();
                 } else {
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
-                    statusTitle.innerText = "Sign In Required";
-                    statusText.innerText = "Tap the button below to sign in securely.";
+                    // 4. Only show the login button if we are absolutely sure no one is logged in
+                    resetUI();
                 }
             });
         }
 
+        // Boot the auth process
         processAuth();
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 </body>
 </html>
