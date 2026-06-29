@@ -137,29 +137,12 @@
         let isHandling = false;
 
         window.manualSignIn = async function() {
-            spinner.style.display = 'block';
-            fallbackBtn.style.display = 'none';
-
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile) {
-                statusTitle.innerText = "Redirecting...";
-                statusText.innerText = "Taking you to Google securely...";
-                try {
-                    await signInWithRedirect(auth, provider);
-                } catch (err) {
-                    logError("Redirect failed: " + err.message);
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
-                    statusTitle.innerText = "Authentication Failed";
-                    statusText.innerText = err.message;
-                }
-                return;
-            }
-
-            // Fire popup immediately to preserve user gesture context on desktop
+            // Fire popup immediately to preserve user gesture context
             const authPromise = signInWithPopup(auth, provider);
 
             // Now update UI
+            spinner.style.display = 'block';
+            fallbackBtn.style.display = 'none';
             statusTitle.innerText = "Connecting...";
             statusText.innerText = "Please complete sign in through the Google popup window.";
 
@@ -173,26 +156,22 @@
                 }
             } catch (error) {
                 console.error("Popup Error:", error);
-                logError("Popup failed: " + error.code + " | " + error.message);
                 
-                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
-                    statusText.innerText = "Popup blocked. Redirecting securely...";
-                    logError("Attempting redirect fallback...");
-                    try {
-                        await signInWithRedirect(auth, provider);
-                    } catch (redirectErr) {
-                        logError("Redirect failed to start: " + redirectErr.message);
-                    }
+                spinner.style.display = 'none';
+                fallbackBtn.style.display = 'flex';
+                
+                if (error.code === 'auth/popup-blocked') {
+                    statusTitle.innerText = "Popup Blocked";
+                    statusText.innerText = "Please allow popups for this site and tap the button again.";
+                } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+                    statusTitle.innerText = "Browser Not Supported";
+                    statusText.innerText = "Google Sign-In doesn't work in this embedded browser. Please tap the 3 dots and select 'Open in Browser', or use standard Chrome/Safari.";
                 } else if (error.code === 'auth/popup-closed-by-user') {
-                    spinner.style.display = 'none';
                     statusTitle.innerText = "Sign In Cancelled";
                     statusText.innerText = "You closed the Google sign-in window.";
-                    fallbackBtn.style.display = 'flex';
                 } else {
-                    spinner.style.display = 'none';
                     statusTitle.innerText = "Authentication Failed";
                     statusText.innerText = error.message;
-                    fallbackBtn.style.display = 'flex';
                 }
             }
         };
