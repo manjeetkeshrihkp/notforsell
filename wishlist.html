@@ -1930,27 +1930,49 @@
                 </button>
               </div>
             `;
-        } else if (appealStatus === "pending") {
+        } else if (appealStatus === "pending" || appealStatus === "rejected" || appealStatus === "approved") {
+            let step2Bg = appealStatus === "pending" ? "#EAB308" : (appealStatus === "rejected" ? "#ef4444" : "#4ade80");
+            let step2Icon = appealStatus === "pending" ? "&#8987;" : "&#10003;";
+            let step2Color = "#000";
+            
+            let step3Bg = appealStatus === "pending" ? "rgba(255,255,255,0.1)" : (appealStatus === "approved" ? "#4ade80" : "#ef4444");
+            let step3Icon = appealStatus === "pending" ? "" : (appealStatus === "approved" ? "&#10003;" : "&#10006;");
+            let step3Color = appealStatus === "pending" ? "transparent" : "#000";
+
+            let title = appealStatus === "pending" ? "Appeal Under Review" : (appealStatus === "approved" ? "Appeal Approved" : "Appeal Rejected");
+            let titleColor = appealStatus === "pending" ? "#EAB308" : (appealStatus === "approved" ? "#4ade80" : "#ef4444");
+            let message = appealStatus === "pending" ? "Our team is currently verifying your details and appeal reason. Please check back later." : (appealStatus === "approved" ? "Good news! Your appeal has been approved. Access to your account is restored." : "Your appeal has been reviewed and rejected. This suspension is permanent.");
+
             appealContent = `
-              <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">â³</span>
-            `;
-        } else if (appealStatus === "rejected") {
-            appealContent = `
-              <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">âŒ</span>
-                <h3 style="font-size:1.05rem; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Rejected</h3>
-                <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Your appeal has been reviewed and rejected. This suspension is permanent and cannot be appealed again.</p>
-              </div>
-            `;
-        } else if (appealStatus === "approved") {
-            appealContent = `
-              <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0.5rem 0;">
-                <span style="font-size:2rem;">âœ…</span>
-                <h3 style="font-size:1.05rem; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Appeal Approved</h3>
-                <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.4; margin:0;">Good news! Your appeal has been approved. Access to your account is restored.</p>
-                <button onclick="window.location.reload()" style="background:#4ade80; color:#000; border:none; padding:0.7rem 1.2rem; border-radius:6px; font-weight:800; font-size:0.85rem; cursor:pointer; text-transform:uppercase; margin-top:0.5rem; font-family:inherit;">
-                  Reload Page
+              <div style="display:flex; flex-direction:column; gap:1.2rem; padding:0.5rem 0; width:100%;">
+                <h3 style="font-size:1.1rem; font-weight:800; color:${titleColor}; text-transform:uppercase; letter-spacing:0.5px; margin:0; text-align:center;">${title}</h3>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0; position:relative; width:80%; align-self:center;">
+                  <div style="position:absolute; top:14px; left:10%; right:10%; height:2px; background:rgba(255,255,255,0.1); z-index:0;"></div>
+                  
+                  <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <div style="width:30px; height:30px; border-radius:50%; background:#4ade80; display:flex; align-items:center; justify-content:center; color:#000; font-weight:900; font-size:0.8rem; border:2px solid #000;">&#10003;</div>
+                    <span style="font-size:0.6rem; color:#fff; text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Submitted</span>
+                  </div>
+                  
+                  <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <div style="width:30px; height:30px; border-radius:50%; background:${step2Bg}; display:flex; align-items:center; justify-content:center; color:${step2Color}; font-weight:900; font-size:0.8rem; border:2px solid #000;">${step2Icon}</div>
+                    <span style="font-size:0.6rem; color:#fff; text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Reviewing</span>
+                  </div>
+                  
+                  <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <div style="width:30px; height:30px; border-radius:50%; background:${step3Bg}; display:flex; align-items:center; justify-content:center; color:${step3Color}; font-weight:900; font-size:0.8rem; border:2px solid #000; transition:all 0.3s;">${step3Icon}</div>
+                    <span style="font-size:0.6rem; color:#fff; text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Decision</span>
+                  </div>
+                </div>
+
+                <p style="color:#a1a1aa; font-size:0.85rem; line-height:1.5; margin:0; text-align:center; padding:0 1rem;">
+                  ${message}
+                </p>
+
+                <button onclick="window.location.reload()" style="background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); padding:0.8rem 1.2rem; border-radius:6px; font-weight:700; font-size:0.8rem; cursor:pointer; text-transform:uppercase; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; margin:0.5rem auto 0; font-family:inherit;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path></svg>
+                  Refresh Status
                 </button>
               </div>
             `;
