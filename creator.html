@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -2478,7 +2478,7 @@
                 const ipSnap = await getDoc(ipRef);
                 if (ipSnap.exists()) {
                     isBlocked = true;
-                    await setDoc(userRef, { blocked: true }, { merge: true });
+                    await setDoc(userRef, { blocked: true, lastIp: userIp, appealStatus: "", appealDetails: null }, { merge: true });
                 }
             }
 
