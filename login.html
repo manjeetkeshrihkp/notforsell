@@ -138,33 +138,13 @@
         let isHandling = false;
 
         window.manualSignIn = async function() {
-            // Check if mobile to prioritize flow
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
+            // ALWAYS use popup for all devices (bypasses ITP redirect issues)
+            const authPromise = signInWithPopup(auth, provider);
+
             spinner.style.display = 'block';
             fallbackBtn.style.display = 'none';
-
-            if (isMobile) {
-                statusTitle.innerText = "Redirecting...";
-                statusText.innerText = "Taking you to Google securely...";
-                localStorage.setItem('cenin_redirect_started', 'true');
-                try {
-                    await signInWithRedirect(auth, provider);
-                } catch (err) {
-                    localStorage.removeItem('cenin_redirect_started');
-                    logError("Redirect failed: " + err.message);
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
-                    statusTitle.innerText = "Authentication Failed";
-                    statusText.innerText = err.message;
-                }
-                return;
-            }
-
-            // Desktop uses popup
             statusTitle.innerText = "Connecting...";
             statusText.innerText = "Please complete sign in through the Google popup window.";
-            const authPromise = signInWithPopup(auth, provider);
 
             try {
                 const result = await authPromise;
@@ -176,25 +156,19 @@
                 }
             } catch (error) {
                 console.error("Popup Error:", error);
+                spinner.style.display = 'none';
+                fallbackBtn.style.display = 'flex';
                 
                 if (error.code === 'auth/popup-blocked') {
-                    statusTitle.innerText = "Popup Blocked. Redirecting...";
-                    statusText.innerText = "Falling back to secure redirect.";
-                    localStorage.setItem('cenin_redirect_started', 'true');
-                    try {
-                        await signInWithRedirect(auth, provider);
-                    } catch (redirectErr) {
-                        localStorage.removeItem('cenin_redirect_started');
-                        logError("Redirect failed to start: " + redirectErr.message);
-                    }
+                    statusTitle.innerText = "Popup Blocked";
+                    statusText.innerText = "Your browser blocked the Google Sign-In popup. Please allow popups for this site and tap the button again.";
                 } else if (error.code === 'auth/popup-closed-by-user') {
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
                     statusTitle.innerText = "Sign In Cancelled";
                     statusText.innerText = "You closed the Google sign-in window.";
+                } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+                    statusTitle.innerText = "Browser Not Supported";
+                    statusText.innerText = "Google Sign-In doesn't work in this embedded browser. Please open this page in a standard Chrome or Safari browser.";
                 } else {
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
                     statusTitle.innerText = "Authentication Failed";
                     statusText.innerText = error.message;
                 }
@@ -202,36 +176,6 @@
         };
 
         async function processAuth() {
-            const redirectStarted = localStorage.getItem('cenin_redirect_started') === 'true';
-
-            try {
-                const result = await getRedirectResult(auth);
-                if (result && result.user) {
-                    localStorage.removeItem('cenin_redirect_started');
-                    isHandling = true;
-                    spinner.style.display = 'block';
-                    fallbackBtn.style.display = 'none';
-                    statusTitle.innerText = "Success!";
-                    statusText.innerText = "Redirecting you back to the app...";
-                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
-                    return;
-                } else if (redirectStarted) {
-                    // Redirect was started but result is null. This means the browser blocked the cross-origin credential exchange (ITP).
-                    localStorage.removeItem('cenin_redirect_started');
-                    isHandling = true;
-                    spinner.style.display = 'none';
-                    fallbackBtn.style.display = 'flex';
-                    statusTitle.innerText = "Login Blocked by Browser";
-                    statusText.innerText = "Your browser's privacy settings are blocking Google Sign-In. If you are on an iPhone or Android, please try turning off 'Prevent Cross-Site Tracking' in Safari settings, or open this page in a different browser.";
-                    return;
-                }
-            } catch (error) {
-                localStorage.removeItem('cenin_redirect_started');
-                console.error("Redirect Error:", error);
-                logError("Redirect Error: " + error.code + " | " + error.message);
-            }
-
             // Check if user is already signed in
             onAuthStateChanged(auth, (user) => {
                 if (isHandling) return;
