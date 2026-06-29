@@ -106,10 +106,62 @@
         <div id="debugLog"></div>
     </div>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // ... [keep your config and initialization the same] ...
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
+            authDomain: "notforsell.vercel.app", 
+            projectId: "ceninasia",
+            storageBucket: "ceninasia.firebasestorage.app",
+            messagingSenderId: "234745308370",
+            appId: "1:234745308370:web:77a89729fa6d829d37390b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const statusTitle = document.getElementById('statusTitle');
+        const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
+        const fallbackBtn = document.getElementById('fallbackBtn');
+        const debugLog = document.getElementById('debugLog');
+
+        function logError(msg) {
+            debugLog.style.display = 'block';
+            debugLog.innerHTML += msg + "<br>";
+        }
+
+        let isHandling = false;
+
+        function handleSuccessRedirect() {
+            if (isHandling) return;
+            isHandling = true;
+            spinner.style.display = 'block';
+            fallbackBtn.style.display = 'none';
+            statusTitle.innerText = "Success!";
+            statusText.innerText = "Redirecting you back to the app...";
+            
+            let returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+            if (returnUrl.includes('login.html')) {
+                returnUrl = 'index.html';
+            }
+            setTimeout(() => { window.location.href = returnUrl; }, 500);
+        }
+
+        function resetUI(errorMsg) {
+            spinner.style.display = 'none';
+            fallbackBtn.style.display = 'flex';
+            statusTitle.innerText = "Sign In Required";
+            if (errorMsg) {
+                statusText.innerText = errorMsg;
+            } else {
+                statusText.innerText = "Tap the button below to sign in securely.";
+            }
+        }
 
         window.manualSignIn = async function() {
             spinner.style.display = 'block';
@@ -123,8 +175,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
             }, 8000);
 
             try {
-                // CRITICAL FIX: Force the browser to save the token permanently 
-                // so it survives the mobile tab switching.
+                // Critical step: Hard-save the auth session data directly to the device storage
+                // to prevent the mobile browser from dropping the connection.
                 await setPersistence(auth, browserLocalPersistence);
                 
                 const result = await signInWithPopup(auth, provider);
@@ -147,5 +199,33 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
                 }
             }
         };
+
+        async function processAuth() {
+            spinner.style.display = 'block';
+            fallbackBtn.style.display = 'none';
+            statusTitle.innerText = "Checking authentication...";
+            statusText.innerText = "Please wait.";
+
+            try {
+                const redirectResult = await getRedirectResult(auth);
+                if (redirectResult && redirectResult.user) {
+                    handleSuccessRedirect();
+                    return; 
+                }
+            } catch (error) {
+                console.error("Redirect Result Error:", error);
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    handleSuccessRedirect();
+                } else {
+                    resetUI();
+                }
+            });
+        }
+
+        processAuth();
+    </script>
 </body>
 </html>
