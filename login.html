@@ -107,151 +107,131 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
-                 GoogleAuthProvider, onAuthStateChanged, setPersistence,
-                 browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // ─── CONFIG ───────────────────────────────────────────────────────────
         const firebaseConfig = {
             apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
-            authDomain: "ceninasia.firebaseapp.com",          // ← YOUR real domain, NOT firebaseapp.com
+            authDomain: "ceninasia.firebaseapp.com",
             projectId: "ceninasia",
             storageBucket: "ceninasia.firebasestorage.app",
             messagingSenderId: "234745308370",
             appId: "1:234745308370:web:77a89729fa6d829d37390b"
         };
-        // ─────────────────────────────────────────────────────────────────────
 
-        const app      = initializeApp(firebaseConfig);
-        const auth     = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
         const statusTitle = document.getElementById('statusTitle');
-        const statusText  = document.getElementById('statusText');
-        const spinner     = document.getElementById('spinner');
+        const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
         const fallbackBtn = document.getElementById('fallbackBtn');
-        const debugLog    = document.getElementById('debugLog');
+        const debugLog = document.getElementById('debugLog');
 
-        const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-
-        // ── Always mark that a redirect is in progress so we never show the
-        //    sign-in button on the return trip before getRedirectResult resolves.
-        const REDIRECT_KEY = 'cenin_redirect_pending';
-
-        function log(msg) {
-            console.log('[CENIN]', msg);
+        function logError(msg) {
             debugLog.style.display = 'block';
             debugLog.innerHTML += msg + "<br>";
         }
 
-        function redirectToApp() {
-            const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-            window.location.href = returnUrl;
-        }
+        let isHandling = false;
 
-        function showSignInButton() {
-            localStorage.removeItem(REDIRECT_KEY);
-            spinner.style.display   = 'none';
-            fallbackBtn.style.display = 'flex';
-            statusTitle.innerText   = 'Sign In Required';
-            statusText.innerText    = 'Tap the button below to sign in with Google.';
-        }
-
-        // ── Button handler ────────────────────────────────────────────────────
-        window.manualSignIn = async function () {
-            spinner.style.display   = 'block';
+        window.manualSignIn = async function() {
+            spinner.style.display = 'block';
             fallbackBtn.style.display = 'none';
 
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (isMobile) {
-                statusTitle.innerText = 'Redirecting to Google...';
-                statusText.innerText  = 'You\'ll be brought back here after signing in.';
-                // Flag so the next page load knows to wait for getRedirectResult
-                localStorage.setItem(REDIRECT_KEY, '1');
+                statusTitle.innerText = "Redirecting...";
+                statusText.innerText = "Taking you to Google securely...";
                 try {
                     await signInWithRedirect(auth, provider);
-                    // page navigates away — nothing below runs
                 } catch (err) {
-                    localStorage.removeItem(REDIRECT_KEY);
-                    log('Redirect start failed: ' + err.code);
-                    showSignInButton();
+                    logError("Redirect failed: " + err.message);
+                    spinner.style.display = 'none';
+                    fallbackBtn.style.display = 'flex';
+                    statusTitle.innerText = "Authentication Failed";
+                    statusText.innerText = err.message;
                 }
-            } else {
-                statusTitle.innerText = 'Opening Google sign-in...';
-                statusText.innerText  = 'Complete sign-in in the popup window.';
-                try {
-                    const result = await signInWithPopup(auth, provider);
-                    if (result?.user) {
-                        statusTitle.innerText = 'Success!';
-                        statusText.innerText  = 'Redirecting you to the app...';
-                        redirectToApp();
+                return;
+            }
+
+            // Fire popup immediately to preserve user gesture context on desktop
+            const authPromise = signInWithPopup(auth, provider);
+
+            // Now update UI
+            statusTitle.innerText = "Connecting...";
+            statusText.innerText = "Please complete sign in through the Google popup window.";
+
+            try {
+                const result = await authPromise;
+                if (result && result.user) {
+                    statusTitle.innerText = "Success!";
+                    statusText.innerText = "Redirecting you back to the app...";
+                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+                    setTimeout(() => { window.location.href = returnUrl; }, 500);
+                }
+            } catch (error) {
+                console.error("Popup Error:", error);
+                logError("Popup failed: " + error.code + " | " + error.message);
+                
+                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+                    statusText.innerText = "Popup blocked. Redirecting securely...";
+                    logError("Attempting redirect fallback...");
+                    try {
+                        await signInWithRedirect(auth, provider);
+                    } catch (redirectErr) {
+                        logError("Redirect failed to start: " + redirectErr.message);
                     }
-                } catch (err) {
-                    log('Popup error: ' + err.code);
-                    if (err.code === 'auth/popup-closed-by-user') {
-                        statusTitle.innerText = 'Sign In Cancelled';
-                        statusText.innerText  = 'You closed the Google window. Try again below.';
-                    } else {
-                        statusTitle.innerText = 'Sign In Failed';
-                        statusText.innerText  = err.message;
-                    }
-                    showSignInButton();
+                } else if (error.code === 'auth/popup-closed-by-user') {
+                    spinner.style.display = 'none';
+                    statusTitle.innerText = "Sign In Cancelled";
+                    statusText.innerText = "You closed the Google sign-in window.";
+                    fallbackBtn.style.display = 'flex';
+                } else {
+                    spinner.style.display = 'none';
+                    statusTitle.innerText = "Authentication Failed";
+                    statusText.innerText = error.message;
+                    fallbackBtn.style.display = 'flex';
                 }
             }
         };
 
-        // ── Main boot logic ───────────────────────────────────────────────────
         async function processAuth() {
-            await setPersistence(auth, browserLocalPersistence);
-
-            const redirectPending = localStorage.getItem(REDIRECT_KEY) === '1';
-
-            // STEP 1 — Always call getRedirectResult on every load.
-            // On a fresh load with no pending redirect it resolves null quickly.
-            // On the return trip from Google it resolves with the user.
             try {
-                log('Checking redirect result...');
                 const result = await getRedirectResult(auth);
-
-                if (result?.user) {
-                    // ✅ Successful redirect return
-                    log('Redirect result: user = ' + result.user.email);
-                    localStorage.removeItem(REDIRECT_KEY);
-                    statusTitle.innerText = 'Success!';
-                    statusText.innerText  = 'Redirecting you to the app...';
-                    redirectToApp();
-                    return;
-                }
-
-                log('No redirect result.');
-            } catch (err) {
-                log('getRedirectResult error: ' + err.code + ' | ' + err.message);
-                localStorage.removeItem(REDIRECT_KEY);
-                // Fall through — let onAuthStateChanged decide what to show
-            }
-
-            // STEP 2 — If we just came back from a redirect but got no result,
-            // the mobile browser blocked the cookie (ITP/cross-origin issue).
-            // onAuthStateChanged will still fire with the user if the session
-            // was saved. Give it a moment to resolve before showing the button.
-            if (redirectPending) {
-                log('Redirect was pending — waiting for onAuthStateChanged...');
-            }
-
-            // STEP 3 — onAuthStateChanged is the final authority.
-            // It fires once quickly with either a user or null.
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    log('onAuthStateChanged: user = ' + user.email);
-                    localStorage.removeItem(REDIRECT_KEY);
-                    statusTitle.innerText = 'Authenticated!';
-                    statusText.innerText  = 'Redirecting you to the app...';
+                if (result && result.user) {
+                    isHandling = true;
                     spinner.style.display = 'block';
                     fallbackBtn.style.display = 'none';
-                    redirectToApp();
+                    statusTitle.innerText = "Success!";
+                    statusText.innerText = "Redirecting you back to the app...";
+                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+                    setTimeout(() => { window.location.href = returnUrl; }, 500);
+                    return;
+                }
+            } catch (error) {
+                console.error("Redirect Error:", error);
+                logError("Redirect Error: " + error.code + " | " + error.message);
+            }
+
+            // Check if user is already signed in
+            onAuthStateChanged(auth, (user) => {
+                if (isHandling) return;
+                
+                if (user) {
+                    isHandling = true;
+                    spinner.style.display = 'block';
+                    fallbackBtn.style.display = 'none';
+                    statusTitle.innerText = "Authenticated!";
+                    statusText.innerText = "Redirecting you back...";
+                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+                    setTimeout(() => { window.location.href = returnUrl; }, 500);
                 } else {
-                    log('onAuthStateChanged: no user.');
-                    showSignInButton();
+                    spinner.style.display = 'none';
+                    fallbackBtn.style.display = 'flex';
+                    statusTitle.innerText = "Sign In Required";
+                    statusText.innerText = "Tap the button below to sign in securely.";
                 }
             });
         }
