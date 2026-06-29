@@ -134,56 +134,72 @@
             debugLog.innerHTML += msg + "<br>";
         }
 
+        // Detect mobile browsers — popups are unreliable on mobile
+        const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+
         let isHandling = false;
 
-        window.manualSignIn = async function() {
-            // Fire popup immediately to preserve user gesture context on mobile
-            const authPromise = signInWithPopup(auth, provider);
+        function redirectToApp() {
+            const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
+            setTimeout(() => { window.location.href = returnUrl; }, 500);
+        }
 
-            // Now update UI
+        window.manualSignIn = async function() {
             spinner.style.display = 'block';
             fallbackBtn.style.display = 'none';
-            statusTitle.innerText = "Connecting...";
-            statusText.innerText = "Please complete sign in through the Google popup window.";
 
-            try {
-                const result = await authPromise;
-                if (result && result.user) {
-                    statusTitle.innerText = "Success!";
-                    statusText.innerText = "Redirecting you back to the app...";
-                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
-                }
-            } catch (error) {
-                console.error("Popup Error:", error);
-                logError("Popup failed: " + error.code + " | " + error.message);
-                
-                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
-                    statusText.innerText = "Popup blocked. Redirecting securely...";
-                    logError("Attempting redirect fallback...");
-                    try {
-                        await signInWithRedirect(auth, provider);
-                    } catch (redirectErr) {
-                        logError("Redirect failed to start: " + redirectErr.message);
-                    }
-                } else if (error.code === 'auth/popup-closed-by-user') {
+            if (isMobile) {
+                // On mobile, always use redirect — popups get blocked or lose context
+                statusTitle.innerText = "Redirecting...";
+                statusText.innerText = "Taking you to Google to sign in.";
+                try {
+                    await signInWithRedirect(auth, provider);
+                    // Page will navigate away; nothing runs after this
+                } catch (error) {
+                    logError("Redirect failed: " + error.code + " | " + error.message);
                     spinner.style.display = 'none';
-                    statusTitle.innerText = "Sign In Cancelled";
-                    statusText.innerText = "You closed the Google sign-in window.";
-                    fallbackBtn.style.display = 'flex';
-                } else {
-                    spinner.style.display = 'none';
-                    statusTitle.innerText = "Authentication Failed";
+                    statusTitle.innerText = "Sign In Failed";
                     statusText.innerText = error.message;
                     fallbackBtn.style.display = 'flex';
+                }
+            } else {
+                // On desktop, popup works fine
+                statusTitle.innerText = "Connecting...";
+                statusText.innerText = "Please complete sign in in the Google popup window.";
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    if (result && result.user) {
+                        isHandling = true;
+                        statusTitle.innerText = "Success!";
+                        statusText.innerText = "Redirecting you back to the app...";
+                        redirectToApp();
+                    }
+                } catch (error) {
+                    console.error("Popup Error:", error);
+                    logError("Popup failed: " + error.code + " | " + error.message);
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        spinner.style.display = 'none';
+                        statusTitle.innerText = "Sign In Cancelled";
+                        statusText.innerText = "You closed the Google sign-in window.";
+                        fallbackBtn.style.display = 'flex';
+                    } else {
+                        spinner.style.display = 'none';
+                        statusTitle.innerText = "Authentication Failed";
+                        statusText.innerText = error.message;
+                        fallbackBtn.style.display = 'flex';
+                    }
                 }
             }
         };
 
         async function processAuth() {
+            await setPersistence(auth, browserLocalPersistence);
+
+            // STEP 1: Always check getRedirectResult first.
+            // This is the critical mobile path — after Google redirects back,
+            // this resolves with the user. Must be awaited BEFORE onAuthStateChanged
+            // so we don't show the sign-in button on a successful redirect return.
             try {
-                await setPersistence(auth, browserLocalPersistence);
-                
                 const result = await getRedirectResult(auth);
                 if (result && result.user) {
                     isHandling = true;
@@ -191,32 +207,34 @@
                     fallbackBtn.style.display = 'none';
                     statusTitle.innerText = "Success!";
                     statusText.innerText = "Redirecting you back to the app...";
-                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
-                    return;
+                    redirectToApp();
+                    return; // Done — skip onAuthStateChanged
                 }
             } catch (error) {
-                console.error("Redirect Error:", error);
+                console.error("Redirect result error:", error);
                 logError("Redirect Error: " + error.code + " | " + error.message);
+                // Don't return — fall through to onAuthStateChanged below
             }
 
-            // Check if user is already signed in
+            // STEP 2: Check if user is already logged in (e.g. returning visit, or desktop popup just succeeded)
             onAuthStateChanged(auth, (user) => {
                 if (isHandling) return;
-                
+
                 if (user) {
                     isHandling = true;
                     spinner.style.display = 'block';
                     fallbackBtn.style.display = 'none';
                     statusTitle.innerText = "Authenticated!";
                     statusText.innerText = "Redirecting you back...";
-                    const returnUrl = localStorage.getItem('cenin_return_url') || 'index.html';
-                    setTimeout(() => { window.location.href = returnUrl; }, 500);
+                    redirectToApp();
                 } else {
+                    // No active session and no redirect result — show sign-in button
                     spinner.style.display = 'none';
                     fallbackBtn.style.display = 'flex';
                     statusTitle.innerText = "Sign In Required";
-                    statusText.innerText = "Tap the button below to sign in securely.";
+                    statusText.innerText = isMobile
+                        ? "Tap below to sign in with Google."
+                        : "Click below to sign in with Google.";
                 }
             });
         }
