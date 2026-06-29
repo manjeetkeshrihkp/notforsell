@@ -105,10 +105,9 @@
         
         <div id="debugLog"></div>
     </div>
-
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC5uoITdl5gXDxvvtW60mlRWbEjLejxgRM",
@@ -132,7 +131,7 @@
 
         function logError(msg) {
             debugLog.style.display = 'block';
-            debugLog.innerHTML += msg + "<br>";
+            debugLog.innerHTML += "Error: " + msg + "<br>";
         }
 
         let isHandling = false;
@@ -143,27 +142,37 @@
             statusTitle.innerText = "Connecting...";
             statusText.innerText = "Please complete sign in with Google.";
 
+            // SAFETY NET: If the browser hangs for 8 seconds, warn the user.
+            const hangTimeout = setTimeout(() => {
+                spinner.style.display = 'none';
+                fallbackBtn.style.display = 'flex';
+                statusTitle.innerText = "Connection Stalled";
+                statusText.innerText = "If you are using an in-app browser (like Facebook/Instagram) or private mode, please open this link in standard Chrome or Safari.";
+                logError("Auth flow timed out. Likely blocked by a restricted WebView or private tab.");
+            }, 8000);
+
             try {
-                // Explicitly set persistence
-                await setPersistence(auth, browserLocalPersistence);
-                
-                // Detect if the user is on a mobile device
+                // REMOVED: await setPersistence(...)
+                // Reason: Firebase defaults to local storage on the web. Explicitly awaiting it 
+                // causes infinite hangs on mobile browsers that restrict IndexedDB.
+
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
                 if (isMobile) {
-                    // Mobile environments aggressively block popups; use redirect instead
                     await signInWithRedirect(auth, provider);
+                    // If successful, the page navigates away. The timeout won't fire.
                 } else {
-                    // Use popup for desktop as requested
                     const result = await signInWithPopup(auth, provider);
+                    clearTimeout(hangTimeout);
                     if (result && result.user) {
                         handleSuccessRedirect();
                     }
                 }
             } catch (error) {
+                clearTimeout(hangTimeout);
                 console.error("Auth Error:", error);
+                logError(error.code + " - " + error.message); // Print error directly to mobile screen
                 
-                // If popup gets blocked on desktop, fallback to redirect automatically
                 if (error.code === 'auth/popup-blocked') {
                     statusTitle.innerText = "Popup Blocked";
                     statusText.innerText = "Redirecting you instead...";
@@ -177,12 +186,9 @@
                 if (error.code === 'auth/popup-closed-by-user') {
                     statusTitle.innerText = "Sign In Cancelled";
                     statusText.innerText = "You closed the Google sign-in window.";
-                } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
-                    statusTitle.innerText = "Browser Not Supported";
-                    statusText.innerText = "Google Sign-In doesn't work in this embedded browser. Please open this page in a standard browser.";
                 } else {
                     statusTitle.innerText = "Authentication Failed";
-                    statusText.innerText = error.message;
+                    statusText.innerText = "Please try again or check the error log below.";
                 }
             }
         };
@@ -198,7 +204,6 @@
         }
 
         async function processAuth() {
-            // 1. First, check if we just returned from a mobile redirect flow
             try {
                 const redirectResult = await getRedirectResult(auth);
                 if (redirectResult && redirectResult.user) {
@@ -210,10 +215,9 @@
                 }
             } catch (error) {
                 console.error("Redirect Error:", error);
-                logError(error.message);
+                logError(error.code + " - " + error.message);
             }
 
-            // 2. Check standard auth state if no redirect occurred
             onAuthStateChanged(auth, (user) => {
                 if (isHandling) return;
                 
@@ -238,6 +242,6 @@
         }
 
         processAuth();
-    </script>
+</script>
 </body>
 </html>
