@@ -219,10 +219,10 @@
       z-index: 0;
     }
 
-    /* Scroll reveal transitions */
+    /* Scroll reveal transitions (Disabled - shows directly) */
     .reveal {
-      opacity: 0;
-      transform: translateY(25px);
+      opacity: 1;
+      transform: translateY(0);
       transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .reveal.revealed {
@@ -1260,7 +1260,119 @@
 </style>
 </head>
 <body>
-
+<div id="cenin-global-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:99999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;">
+    <div class="cenin-premium-loader">
+        <div class="brand-text">CENIN</div>
+        <div class="brand-subtext">CREATOR</div>
+        <div class="progress-line"><div class="progress-fill"></div></div>
+        <div class="loader-message">Create Reels. Earn Cash. Repeat.</div>
+        <div class="loader-powered">Powered by <strong>EliteX Media</strong></div>
+    </div>
+    <style>
+      .cenin-premium-loader {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+      }
+      .brand-text {
+          font-family: 'Inter', sans-serif;
+          font-size: 2.8rem;
+          font-weight: 900;
+          color: #ffffff;
+          letter-spacing: 10px;
+          margin-bottom: 0.2rem;
+          margin-right: -10px;
+          text-transform: uppercase;
+          background: linear-gradient(to right, #ffffff 20%, #71717a 40%, #71717a 60%, #ffffff 80%);
+          background-size: 200% auto;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shine 2.5s linear infinite, scaleUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .brand-subtext {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #a1a1aa;
+          letter-spacing: 8px;
+          margin-bottom: 2rem;
+          margin-right: -8px;
+          text-transform: uppercase;
+          opacity: 0;
+          animation: fadeUp 0.8s ease forwards 0.4s;
+      }
+      .progress-line {
+          width: 80px;
+          height: 1px;
+          background: rgba(255,255,255,0.1);
+          position: relative;
+          overflow: hidden;
+          opacity: 0;
+          animation: fadeIn 0.5s ease forwards 0.8s;
+      }
+      .progress-fill {
+          position: absolute;
+          top: 0; left: -100%;
+          width: 100%; height: 100%;
+          background: #ffffff;
+          animation: progressShine 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .loader-message {
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 0.9rem;
+          color: #EAB308;
+          margin-top: 2rem;
+          opacity: 0;
+          animation: fadeIn 0.8s ease forwards 1.2s;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+      }
+      .loader-powered {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.7rem;
+          color: #71717a;
+          margin-top: 0.5rem;
+          opacity: 0;
+          animation: fadeIn 0.8s ease forwards 1.6s;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+      }
+      .loader-powered strong {
+          color: #fff;
+      }
+      @keyframes shine {
+          to { background-position: 200% center; }
+      }
+      @keyframes scaleUp {
+          from { transform: scale(0.95); opacity: 0; filter: blur(10px); }
+          to { transform: scale(1); opacity: 1; filter: blur(0); }
+      }
+      @keyframes fadeUp {
+          from { transform: translateY(10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes fadeIn {
+          to { opacity: 1; }
+      }
+      @keyframes progressShine {
+          0% { left: -100%; width: 50%; }
+          100% { left: 100%; width: 50%; }
+      }
+    </style>
+</div>
+<script>
+  window.removeGlobalLoader = function() {
+      const loader = document.getElementById('cenin-global-loader');
+      if (loader) {
+          loader.style.opacity = '0';
+          loader.style.visibility = 'hidden';
+          setTimeout(() => loader.remove(), 400);
+      }
+  };
+  setTimeout(window.removeGlobalLoader, 5000);
+</script>
   <!-- Background Ambient Effects -->
   <div class="bg-glow-1"></div>
   <div class="bg-glow-2"></div>
@@ -1281,7 +1393,7 @@
     <canvas id="heroSparks" class="spark-canvas"></canvas>
 
     <div class="hero-content">
-      <div class="hero-badge"><span></span>Creator Alliance</div>
+      <div class="hero-badge"><span>•</span>Creator Alliance</div>
       <h1>Don't Just Influence.<br><span class="logo-creator">Own It.</span></h1>
       <p>
         Stop generating content for brands that only pay you in
@@ -1347,7 +1459,7 @@
         <span>Equity: Day 45 / 90 Active</span>
       </div>
       <div class="floating-card fc-3">
-        <div class="fc-icon">??</div>
+        <div class="fc-icon">✨</div>
         <span>New Drop: Jewelry Unlocked</span>
       </div>
     </div>
@@ -1356,18 +1468,18 @@
   <!-- SCROLLING MARQUEE -->
   <div class="marquee-container">
     <div class="marquee-content">
-      <span>NO FOLLOWERS NEEDED</span> <span>�</span>
-      <span>POWERED BY ELITEX MEDIA</span> <span>�</span>
-      <span>3% - 6% SALES COMMISSION</span> <span>�</span>
-      <span>10% CREATOR EQUITY POOL</span> <span>�</span>
-      <span>₹1 TO ₹99 PAYOUT PER REEL</span> <span>�</span>
-      <span>MIN ₹450 TO WITHDRAW</span> <span>�</span>
-      <span>NO FOLLOWERS NEEDED</span> <span>�</span>
-      <span>POWERED BY ELITEX MEDIA</span> <span>�</span>
-      <span>3% - 6% SALES COMMISSION</span> <span>�</span>
-      <span>10% CREATOR EQUITY POOL</span> <span>�</span>
-      <span>₹1 TO ₹99 PAYOUT PER REEL</span> <span>�</span>
-      <span>MIN ₹450 TO WITHDRAW</span> <span>�</span>
+      <span>NO FOLLOWERS NEEDED</span> <span>•</span>
+      <span>POWERED BY ELITEX MEDIA</span> <span>•</span>
+      <span>3% - 6% SALES COMMISSION</span> <span>•</span>
+      <span>10% CREATOR EQUITY POOL</span> <span>•</span>
+      <span>₹1 TO ₹99 PAYOUT PER REEL</span> <span>•</span>
+      <span>MIN ₹450 TO WITHDRAW</span> <span>•</span>
+      <span>NO FOLLOWERS NEEDED</span> <span>•</span>
+      <span>POWERED BY ELITEX MEDIA</span> <span>•</span>
+      <span>3% - 6% SALES COMMISSION</span> <span>•</span>
+      <span>10% CREATOR EQUITY POOL</span> <span>•</span>
+      <span>₹1 TO ₹99 PAYOUT PER REEL</span> <span>•</span>
+      <span>MIN ₹450 TO WITHDRAW</span> <span>•</span>
     </div>
   </div>
 
@@ -1386,7 +1498,7 @@
           <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
         </div>
         <h3>Powered By <span class="text-blue">EliteX Media Agency</span></h3>
-        <p>To collaborate with Cenin, you will also join the EliteX Agency network. All your earnings are tracked on the <strong>EliteX Creator Dashboard</strong> (managed by EliteX Media) and paid directly to the <strong>Wallet section</strong> of the EliteX platform. Please note: Cenin holds zero ownership in EliteX�it is a completely independent partner agency.</p>
+        <p>To collaborate with Cenin, you will also join the EliteX Agency network. All your earnings are tracked on the <strong>EliteX Creator Dashboard</strong> (managed by EliteX Media) and paid directly to the <strong>Wallet section</strong> of the EliteX platform. Please note: Cenin holds zero ownership in EliteX•it is a completely independent partner agency.</p>
       </div>
 
       <!-- 3% - 6% Commission Card -->
@@ -1553,7 +1665,7 @@
 
         <div class="total-earnings-block">
           <span class="total-label">Est. Monthly Payout</span>
-          <span class="total-val" id="result-total">₹3,190</span>
+          <span class="total-val" id="result-total">₹3,90</span>
         </div>
       </div>
     </div>
@@ -1622,7 +1734,7 @@
         </button>
         <div class="faq-content">
           <div class="faq-inner">
-            To continue with Cenin, you will also be registered under the EliteX Agency network. Cenin does not own any assets or holdings in EliteX�it is a completely independent agency partnership to handle talent, promotions, and payments.
+            To continue with Cenin, you will also be registered under the EliteX Agency network. Cenin does not own any assets or holdings in EliteX•it is a completely independent agency partnership to handle talent, promotions, and payments.
           </div>
         </div>
       </div>
@@ -1812,7 +1924,7 @@
       <div style="font-size: 0.8rem; line-height: 1.6; color: var(--text-main); display: flex; flex-direction: column; gap: 1.2rem; max-height: 420px; overflow-y: auto; padding-right: 8px;">
 
         <div style="background: rgba(204, 255, 0, 0.06); border: 1px solid rgba(204, 255, 0, 0.25); padding: 1rem; border-radius: 12px; font-weight: 700; color: var(--neon-green); font-family: 'Space Grotesk', sans-serif;">
-          ?? MANDATORY DISCLOSURE: These terms govern the relationship, collaboration policies, and compensation frameworks strictly between you (the "Creator") and Cenin (the "Brand"). These terms DO NOT apply to, alter, or replace the policies of EliteX Media Agency. EliteX functions as an independent partner agency network. You must separately review and accept the EliteX Media terms of service to activate your dashboard, use the dashboard wallet, and withdraw funds. Cenin holds no stake or ownership in EliteX Media.
+          ⚠️ MANDATORY DISCLOSURE: These terms govern the relationship, collaboration policies, and compensation frameworks strictly between you (the "Creator") and Cenin (the "Brand"). These terms DO NOT apply to, alter, or replace the policies of EliteX Media Agency. EliteX functions as an independent partner agency network. You must separately review and accept the EliteX Media terms of service to activate your dashboard, use the dashboard wallet, and withdraw funds. Cenin holds no stake or ownership in EliteX Media.
         </div>
 
         <div>
@@ -1933,55 +2045,12 @@
       }
     }).catch((e) => console.error('Redirect auth error:', e));
 
-    window.triggerGoogleSignIn = function() {
-        const btn = document.getElementById('triggerGoogleSignInBtn');
-        const googleIconSvg = `<svg class="google-logo-svg" width="18" height="18" viewBox="0 0 24 24" style="margin-right:8px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
-
-        if (window.location.protocol === 'file:') {
-            alert('Firebase Authentication requires a web server.');
-            return;
-        }
-
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (isMobile) {
-            // Mobile: always use redirect � popup is blocked inside modals on mobile browsers
-            if (btn) btn.innerHTML = 'Redirecting to Google...';
-            localStorage.setItem('cenin_checkout_redirect', 'true');
-            sessionStorage.setItem('cenin_checkout_redirect', 'true');
-            signInWithRedirect(auth, provider).catch((error) => {
-                console.error('Redirect Error:', error);
-                if (btn) btn.innerHTML = googleIconSvg + ' Continue with Google';
-                localStorage.removeItem('cenin_checkout_redirect');
-                sessionStorage.removeItem('cenin_checkout_redirect');
-                alert('Sign in failed: ' + error.message);
-            });
-        } else {
-            // Desktop: popup works reliably
-            if (btn) btn.innerHTML = 'Signing in...';
-            signInWithPopup(auth, provider)
-              .then((result) => {
-            window.currentUser = result.user;
-            const authModal = document.getElementById('authModal');
-            if (authModal) authModal.classList.remove('active');
-            if (btn) btn.innerHTML = googleIconSvg + ' Continue with Google';
-              }).catch((error) => {
-                console.error('Popup Error:', error);
-                if (btn) btn.innerHTML = googleIconSvg + ' Continue with Google';
-                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
-                    localStorage.setItem('cenin_checkout_redirect', 'true');
-                    sessionStorage.setItem('cenin_checkout_redirect', 'true');
-                    signInWithRedirect(auth, provider).catch((e) => {
-                        localStorage.removeItem('cenin_checkout_redirect');
-                        sessionStorage.removeItem('cenin_checkout_redirect');
-                        alert('Sign in failed: ' + e.message);
-                    });
-                } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-                    alert('Sign in failed: ' + error.message);
-                }
-              });
-        }
+    window.triggerGoogleAuth = function(btn) {
+        if (btn) btn.innerHTML = 'Redirecting...';
+        localStorage.setItem('cenin_return_url', 'creator.html');
+        window.location.href = 'login.html';
     };
+    window.triggerGoogleSignIn = window.triggerGoogleAuth;
 
     window.db = db;
     window.auth = auth;
@@ -2640,14 +2709,14 @@
       if (fixedSalary < 1) fixedSalary = 1;
       if (fixedSalary > 1000) fixedSalary = 1000;
 
-      document.getElementById('result-salary').innerText = '?' + fixedSalary.toLocaleString('en-IN');
+      document.getElementById('result-salary').innerText = '₹' + fixedSalary.toLocaleString('en-IN');
 
       const totalEstimated = reelPayout + commPayout + fixedSalary;
 
       // Render results
-      document.getElementById('result-reels-cash').innerText = '?' + reelPayout.toLocaleString('en-IN');
-      document.getElementById('result-comm-cash').innerText = '?' + commPayout.toLocaleString('en-IN');
-      document.getElementById('result-total').innerText = '?' + totalEstimated.toLocaleString('en-IN');
+      document.getElementById('result-reels-cash').innerText = '₹' + reelPayout.toLocaleString('en-IN');
+      document.getElementById('result-comm-cash').innerText = '₹' + commPayout.toLocaleString('en-IN');
+      document.getElementById('result-total').innerText = '₹' + totalEstimated.toLocaleString('en-IN');
     }
     window.updateCalculation = updateCalculation;
 
@@ -2864,7 +2933,7 @@
           await addDoc(collection(db, "creator_applications"), applicantData);
         }
 
-        btn.innerText = "Applied ??";
+        btn.innerText = "Applied ✅";
         btn.style.background = "var(--neon-green)";
         btn.style.color = "#000";
 
